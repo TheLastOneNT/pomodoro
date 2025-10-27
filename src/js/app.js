@@ -6,7 +6,6 @@ import { save, load } from "./storage.js";
 
 const $ = (s) => document.querySelector(s);
 
-// DOM
 const tomatoBtn = $("#tomatoBtn");
 const themeToggle = $("#themeToggle");
 const openSettings = $("#openSettings");
@@ -41,7 +40,7 @@ function persist() {
   });
 }
 
-// ui beat
+// beat
 function onBeat() {
   sync();
   if (state.remaining === 0) playEnd();

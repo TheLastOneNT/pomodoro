@@ -5,9 +5,13 @@ const timeEl = $("#time");
 const phaseEl = $("#phase");
 const tomatoBtn = $("#tomatoBtn");
 
-// прогресс
+// слои лица/прогресса
+const face = document.getElementById("face");
+const mouth = face.querySelector(".mouth");
 const progressArc = document.getElementById("progressArc");
-const r = Number(progressArc.getAttribute("r")); // 138
+
+// прогресс геометрия
+const r = Number(progressArc.getAttribute("r")); // 168
 const C = 2 * Math.PI * r;
 progressArc.setAttribute("stroke-dasharray", String(C));
 progressArc.setAttribute("stroke-dashoffset", String(C));
@@ -21,24 +25,36 @@ export function fmt(s) {
 
 function statusText() {
   if (!state.running) return "Отдыхаем 😌";
-  if (state.phase === "focus") return "Фокусируемся 🎯";
-  return "Перерыв ☕️";
+  return state.phase === "focus" ? "Фокусируемся 🎯" : "Перерыв ☕️";
+}
+
+function applyMood() {
+  // режим на кнопке — для анимаций
+  tomatoBtn.classList.remove("mode-idle", "mode-focus", "mode-break");
+  if (!state.running) tomatoBtn.classList.add("mode-idle");
+  else
+    tomatoBtn.classList.add(
+      state.phase === "focus" ? "mode-focus" : "mode-break"
+    );
+
+  // рот / мимика
+  mouth.classList.remove("mouth--smile", "mouth--rest", "mouth--pause");
+  if (!state.running) mouth.classList.add("mouth--pause");
+  else
+    mouth.classList.add(
+      state.phase === "focus" ? "mouth--smile" : "mouth--rest"
+    );
 }
 
 export function sync() {
-  // тема: ночь дефолт → добавляем .day, когда нужно
+  // тема: ночь дефолт → включаем .day при необходимости
   document.body.classList.toggle("day", state.theme === "day");
 
   // цифры и статус
   timeEl.textContent = fmt(state.remaining);
   phaseEl.textContent = statusText();
 
-  // классы для анимаций
-  tomatoBtn.classList.toggle("focus", state.phase === "focus");
-  tomatoBtn.classList.toggle("break", state.phase === "break");
-  tomatoBtn.classList.toggle("running", state.running);
-
-  // прогресс — только заполненная часть
+  // прогресс — только заполняемая часть (без «трека»)
   const total =
     state.phase === "break"
       ? state.durations.breakSec
@@ -46,4 +62,7 @@ export function sync() {
   const done = total ? 1 - state.remaining / total : 0;
   const offset = Math.max(0, Math.min(C, C - done * C));
   progressArc.setAttribute("stroke-dashoffset", String(offset));
+
+  // настроение/анимации
+  applyMood();
 }
