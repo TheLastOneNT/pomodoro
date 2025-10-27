@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Pomodoro — Emoji</title>
+
+    <link rel="stylesheet" href="./src/css/tokens.css" />
+    <link rel="stylesheet" href="./src/css/base.css" />
+    <link rel="stylesheet" href="./src/css/layout.css" />
+    <link rel="stylesheet" href="./src/css/app.css" />
+    <link rel="stylesheet" href="./src/css/tomato.css" />
+  </head>
+
+  <body>
+    <main class="app" id="app">
+      <header class="topbar">
+        <div class="brand">🍅</div>
+        <div class="actions">
+          <button id="themeToggle" class="icon-btn" aria-label="Тема">
+            🌙
+          </button>
+          <button id="openSettings" class="icon-btn" aria-label="Настройки">
+            ⚙️
+          </button>
+        </div>
+      </header>
+
+      <section class="stage" aria-live="polite">
+        <!-- Кнопка-помидор со встроенным прогресс-кольцом (без трека) -->
+        <button
+          class="tomato"
+          id="tomatoBtn"
+          aria-label="Старт/Пауза"
+          aria-pressed="false"
+        >
+          <svg
+            class="tomato-svg"
+            viewBox="0 0 320 320"
+            role="img"
+            aria-label="Помидор-таймер"
+          >
+            <defs>
+              <!-- тело -->
+              <radialGradient id="t_body" cx="36%" cy="34%" r="70%">
+                <stop offset="0%" stop-color="#ff9a82" />
+                <stop offset="55%" stop-color="#ff3b30" />
+                <stop offset="100%" stop-color="#c71e19" />
+              </radialGradient>
+              <!-- листья -->
+              <radialGradient id="t_leaf" cx="32%" cy="28%" r="70%">
+                <stop offset="0%" stop-color="#b7f6c6" />
+                <stop offset="100%" stop-color="#1aa868" />
+              </radialGradient>
+              <!-- мягкая внутренняя тень -->
+              <filter id="inner" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="3" result="b" />
+                <feComposite
+                  in="SourceGraphic"
+                  in2="b"
+                  operator="arithmetic"
+                  k2="1"
+                  k3="0.8"
+                />
+              </filter>
+              <!-- бликовая маска -->
+              <linearGradient id="hi" x1="0" x2="1">
+                <stop offset="0%" stop-color="rgba(255,255,255,.55)" />
+                <stop offset="100%" stop-color="rgba(255,255,255,0)" />
+              </linearGradient>
+            </defs>
+
+            <!-- ПРОГРЕСС (только заполняемая часть) -->
+            <circle
+              id="progressArc"
+              cx="160"
+              cy="166"
+              r="138"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="8"
+              stroke-linecap="round"
+              style="transform: rotate(-90deg); transform-origin: 160px 166px"
+            />
+
+            <!-- легкая тень под плодом -->
+            <ellipse cx="160" cy="270" rx="92" ry="16" fill="rgba(0,0,0,.28)" />
+
+            <!-- плод -->
+            <circle
+              cx="160"
+              cy="166"
+              r="124"
+              fill="url(#t_body)"
+              filter="url(#inner)"
+            />
+            <!-- бликовая дуга -->
+            <path
+              d="M80,120 a70,48 0 0,1 48,-38"
+              stroke="url(#hi)"
+              stroke-width="10"
+              fill="none"
+              opacity=".65"
+              stroke-linecap="round"
+            />
+
+            <!-- листья -->
+            <g transform="translate(160,60)">
+              <path
+                d="M-74,6 C-38,-10 -20,-14 0,-12 C-24,8 -40,14 -74,6"
+                fill="url(#t_leaf)"
+              />
+              <path
+                d="M74,6 C38,-10 20,-14 0,-12 C24,8 40,14 74,6"
+                fill="url(#t_leaf)"
+              />
+            </g>
+
+            <!-- лицо -->
+            <g class="face">
+              <g class="eye eye-l">
+                <circle cx="118" cy="150" r="17" fill="#161616" />
+                <circle cx="123" cy="146" r="5.5" fill="#fff" />
+              </g>
+              <g class="eye eye-r">
+                <circle cx="202" cy="150" r="17" fill="#161616" />
+                <circle cx="207" cy="146" r="5.5" fill="#fff" />
+              </g>
+              <path
+                class="mouth"
+                d="M122 196 q38 34 76 0"
+                stroke="#1a1a1a"
+                stroke-width="10"
+                fill="none"
+                stroke-linecap="round"
+              />
+            </g>
+          </svg>
+        </button>
+
+        <div class="readout">
+          <div id="time" class="time">25:00</div>
+          <div id="phase" class="phase">Фокусируемся 🎯</div>
+        </div>
+      </section>
+
+      <footer class="credit" aria-hidden="true"></footer>
+    </main>
+
+    <!-- Off-canvas настройки -->
+    <aside id="settingsPanel" class="panel" aria-hidden="true">
+      <div class="panel__head">
+        <h2>Настройки</h2>
+        <button id="closeSettings" class="icon-btn" aria-label="Закрыть">
+          ✕
+        </button>
+      </div>
+
+      <div class="panel__body">
+        <div class="setting">
+          <label class="setting__label">Пресет</label>
+          <select id="preset" class="sel">
+            <option value="25-5">25 / 5</option>
+            <option value="50-10">50 / 10</option>
+            <option value="custom">Кастом…</option>
+          </select>
+        </div>
+
+        <div id="customRow" class="setting hidden">
+          <label class="setting__label">Кастомные интервалы</label>
+          <div class="grid2">
+            <label class="pill in">
+              <span>Фокус (мин)</span>
+              <input id="focusMin" type="number" min="1" max="120" value="25" />
+            </label>
+            <label class="pill in">
+              <span>Перерыв (мин)</span>
+              <input id="breakMin" type="number" min="1" max="60" value="5" />
+            </label>
+          </div>
+          <button id="applyCustom" class="btn primary full">Применить</button>
+        </div>
+
+        <div class="setting">
+          <label class="setting__row">
+            <span>Авто-переход</span>
+            <input id="autoToggle" class="switch" type="checkbox" checked />
+          </label>
+        </div>
+
+        <div class="setting">
+          <label class="setting__row">
+            <span>Звук</span>
+            <input id="soundToggle" class="switch" type="checkbox" checked />
+          </label>
+        </div>
+
+        <div class="setting">
+          <button id="resetBtn" class="btn ghost full">Сбросить</button>
+        </div>
+      </div>
+    </aside>
+
+    <div id="backdrop" class="backdrop" aria-hidden="true"></div>
+
+    <!-- встроенные короткие сигналы (без 404) -->
+    <audio
+      id="sfxStart"
+      preload="auto"
+      src="data:audio/mp3;base64,//uQZAAAAAAAAAAAAAAAAAAAAAAAWGlin...AAAA"
+    ></audio>
+    <audio
+      id="sfxEnd"
+      preload="auto"
+      src="data:audio/mp3;base64,//uQZAAAAAAAAAAAAAAAAAAAAAAAWGlin...AAAA"
+    ></audio>
+
+    <script type="module" src="./src/js/app.js"></script>
+  </body>
+</html>

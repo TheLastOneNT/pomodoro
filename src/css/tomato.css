@@ -1,0 +1,60 @@
+.tomato {
+  --size: clamp(240px, 44vw, 460px);
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: none;
+}
+.tomato-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* деликатные анимации */
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.015);
+  }
+}
+@keyframes blink {
+  0%,
+  92%,
+  100% {
+    transform: scaleY(1);
+  }
+  95% {
+    transform: scaleY(0.1);
+  }
+}
+
+.tomato.focus.running {
+  animation: breathe 3.6s ease-in-out infinite;
+}
+.tomato.break.running {
+  animation: breathe 6s ease-in-out infinite;
+}
+.tomato.focus .eye-l,
+.tomato.focus .eye-r {
+  transform-origin: center;
+  animation: blink 4.2s infinite;
+}
+.tomato.break .eye-r {
+  transform-origin: center;
+  animation: blink 3.4s infinite;
+}
+
+/* цвет прогресса наследуем от сцены */
+.stage {
+  color: var(--accent-night);
+}
+body.day .stage {
+  color: var(--accent-day);
+}

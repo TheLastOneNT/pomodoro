@@ -1,0 +1,198 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  overflow: hidden;
+  color: var(--ink-inv);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Inter, Roboto,
+    Helvetica, Arial, sans-serif;
+  font-feature-settings: "tnum" 1, "ss01" 1;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+
+  /* НОЧЬ по умолчанию — полностью матовая */
+  background: var(--night-0);
+}
+
+/* ДЕНЬ — светлый, не белый */
+body.day {
+  color: var(--ink);
+  background: var(--day-0);
+}
+
+button {
+  cursor: pointer;
+  border: 0;
+  background: none;
+  color: inherit;
+}
+
+/* кнопки */
+.btn {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-weight: 700;
+}
+body.day .btn {
+  border-color: rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.04);
+}
+.btn.primary {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 59, 48, 0.92),
+    rgba(255, 79, 68, 0.92)
+  );
+  border-color: rgba(255, 255, 255, 0.22);
+}
+body.day .btn.primary {
+  border-color: rgba(0, 0, 0, 0.12);
+}
+.btn.ghost {
+  background: rgba(255, 255, 255, 0.06);
+}
+body.day .btn.ghost {
+  background: rgba(0, 0, 0, 0.04);
+}
+.btn.full {
+  width: 100%;
+}
+.btn:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+body.day .icon-btn {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+.hidden {
+  display: none !important;
+}
+
+.sel {
+  appearance: none;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: inherit;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+body.day .sel {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+.pill {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  font-weight: 600;
+}
+body.day .pill {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+.pill.in {
+  width: 100%;
+  justify-content: space-between;
+}
+.pill input[type="number"] {
+  background: transparent;
+  color: inherit;
+  border: none;
+  font-weight: 700;
+  width: 5em;
+  text-align: right;
+}
+
+/* Переключатели (checkbox → switch) */
+.switch {
+  appearance: none;
+  width: 44px;
+  height: 26px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  position: relative;
+  outline: none;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.switch::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s ease;
+}
+.switch:checked {
+  background: linear-gradient(
+    180deg,
+    rgba(126, 249, 192, 0.9),
+    rgba(33, 211, 157, 0.9)
+  );
+  border-color: rgba(126, 249, 192, 0.5);
+}
+.switch:checked::before {
+  transform: translateX(18px);
+}
+body.day .switch {
+  background: rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+body.day .switch::before {
+  background: #111;
+}
+body.day .switch:checked {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 59, 48, 0.9),
+    rgba(255, 98, 83, 0.9)
+  );
+  border-color: rgba(255, 59, 48, 0.4);
+}
+
+.row-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
