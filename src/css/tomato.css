@@ -1,5 +1,5 @@
-/* размер помидора */
-.tomato3d {
+/* Основной контейнер */
+.tomato {
   --size: clamp(260px, 46vw, 520px);
   width: var(--size);
   height: var(--size);
@@ -10,8 +10,8 @@
   background: transparent;
 }
 
-/* PNG-тело */
-.tomato3d__img {
+/* PNG */
+.tomato__img {
   width: 100%;
   height: 100%;
   object-fit: contain;
@@ -21,8 +21,8 @@
   transform-origin: 50% 60%;
 }
 
-/* лёгкая мягкая тень */
-.tomato3d__shadow {
+/* мягкая тень под плодом */
+.tomato__shadow {
   position: absolute;
   left: 50%;
   bottom: -1.5%;
@@ -38,8 +38,8 @@
   pointer-events: none;
 }
 
-/* прогресс-дуга — вокруг плода */
-.tomato3d__progress {
+/* прогресс-дуга */
+.tomato__progress {
   position: absolute;
   inset: -6%;
   width: 112%;
@@ -47,56 +47,15 @@
   pointer-events: none;
 }
 
-/* лицо — абсолютные проценты, чтобы масштабировалось с PNG */
-.face {
-  position: absolute;
-  inset: 0;
-  transform: translateZ(0);
+/* Цвет прогресса зависит от темы */
+.stage {
+  color: var(--accent-night);
+}
+body.day .stage {
+  color: var(--accent-day);
 }
 
-/* глаза */
-.eye {
-  position: absolute;
-  width: 10.5%;
-  height: 10.5%;
-  background: #111;
-  border-radius: 50%;
-  transform-origin: 50% 50%;
-}
-.eye--l {
-  left: 30%;
-  top: 39%;
-}
-.eye--r {
-  right: 28.5%;
-  top: 39%;
-}
-
-/* блик в глазах */
-.eye .shine {
-  position: absolute;
-  content: "";
-  display: block;
-  width: 32%;
-  height: 32%;
-  left: 48%;
-  top: 18%;
-  background: #fff;
-  border-radius: 50%;
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.35);
-}
-
-/* рот */
-.mouth {
-  position: absolute;
-  left: 25%;
-  right: 25%;
-  bottom: 28%;
-  height: 26%;
-  overflow: visible;
-}
-
-/* АНИМАЦИИ -------------------------------------------------- */
+/* лёгкие "живые" движения */
 @keyframes breathe {
   0%,
   100% {
@@ -115,51 +74,14 @@
     transform: translateY(-1.2%);
   }
 }
-@keyframes blink {
-  0%,
-  92%,
-  100% {
-    transform: scaleY(1);
-  }
-  95% {
-    transform: scaleY(0.1);
-  }
-}
 
-/* базовая «живость» */
-.tomato3d.mode-idle .tomato3d__img {
+/* состояния */
+.tomato.mode-idle .tomato__img {
   animation: floatY 6s ease-in-out infinite;
 }
-.tomato3d.mode-focus .tomato3d__img {
+.tomato.mode-focus .tomato__img {
   animation: breathe 3.8s ease-in-out infinite, floatY 5.5s ease-in-out infinite;
 }
-.tomato3d.mode-break .tomato3d__img {
+.tomato.mode-break .tomato__img {
   animation: breathe 6.5s ease-in-out infinite, floatY 7.5s ease-in-out infinite;
-}
-
-/* моргание глаз */
-.tomato3d.mode-focus .eye {
-  animation: blink 4.2s infinite;
-}
-.tomato3d.mode-break .eye {
-  animation: blink 6s infinite;
-}
-
-/* мимика (классы ставим из JS): smile|rest */
-.mouth--smile #mouthPath {
-  d: path("M30 60 Q100 95 170 60");
-} /* улыбка */
-.mouth--rest #mouthPath {
-  d: path("M40 68 Q100 78 160 68");
-} /* спокойный */
-.mouth--pause #mouthPath {
-  d: path("M50 65 Q100 60 150 65");
-} /* нейтральный при паузе */
-
-/* цвета дуги прогресса в темах */
-.stage {
-  color: var(--accent-night);
-}
-body.day .stage {
-  color: var(--accent-day);
 }

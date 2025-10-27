@@ -1,0 +1,93 @@
+xml version=1.0 encoding=UTF-8
+svg width=768 height=768 viewBox=0 0 768 768 fill=none xmlns=httpwww.w3.org2000svg
+  titleTomato Mascot (Layered, animatable)title
+
+  !-- ======= GRADIENTS  FILTERS ======= --
+  defs
+    !-- body --
+    radialGradient id=bodyGrad cx=0 cy=0 r=1 gradientUnits=userSpaceOnUse
+                    gradientTransform=translate(316 300) rotate(30) scale(420 420)
+      stop offset=0   stop-color=#FF9A82
+      stop offset=0.55 stop-color=#FF3B30
+      stop offset=1   stop-color=#C71E19
+    radialGradient
+
+    !-- subtle inner softening --
+    filter id=innerSoft x=-40% y=-40% width=180% height=180% color-interpolation-filters=sRGB
+      feGaussianBlur stdDeviation=2.2 result=b
+      feComposite in=SourceGraphic in2=b operator=arithmetic k2=1 k3=0.85
+    filter
+
+    !-- leaf --
+    radialGradient id=leafGrad cx=0 cy=0 r=1 gradientUnits=userSpaceOnUse
+                    gradientTransform=translate(384 150) rotate(12) scale(260 220)
+      stop offset=0 stop-color=#B7F6C6
+      stop offset=1 stop-color=#1AA868
+    radialGradient
+
+    !-- highlight --
+    linearGradient id=shineGrad x1=180 y1=190 x2=300 y2=120 gradientUnits=userSpaceOnUse
+      stop offset=0 stop-color=rgba(255,255,255,.65)
+      stop offset=1 stop-color=rgba(255,255,255,0)
+    linearGradient
+
+    !-- clipping for eyelids (blinksleep) --
+    clipPath id=clipEyeLellipse cx=302 cy=330 rx=46 ry=38clipPath
+    clipPath id=clipEyeRellipse cx=506 cy=330 rx=46 ry=38clipPath
+  defs
+
+  !-- ======= DROP SHADOW (GROUND) ======= --
+  ellipse id=shadowGround cx=384 cy=666 rx=190 ry=26 fill=rgba(0,0,0,.28)
+
+  !-- ======= BODY ======= --
+  g id=body
+    circle id=sphere cx=384 cy=396 r=270 fill=url(#bodyGrad) filter=url(#innerSoft)
+    !-- soft specular highlight --
+    path id=highlight d=M240 290 C270 250 330 220 380 218
+          stroke=url(#shineGrad) stroke-width=18 stroke-linecap=round fill=none opacity=.75
+  g
+
+  !-- ======= LEAVES ======= --
+  g id=leaves
+    path d=M232 216C290 188 330 178 384 180C332 214 300 230 232 216Z fill=url(#leafGrad)
+    path d=M536 216C478 188 438 178 384 180C436 214 468 230 536 216Z fill=url(#leafGrad)
+    !-- small stem hump --
+    path d=M384 172c26 0 36-8 44-8c-16 14-30 22-44 22s-28-8-44-22c8 0 18 8 44 8Z fill=url(#leafGrad)
+  g
+
+  !-- ======= FACE ======= --
+  g id=face stroke-linecap=round
+    !-- left eye --
+    g id=eyeL
+      ellipse id=eyeLWhite cx=302 cy=330 rx=46 ry=38 fill=#FFFFFF
+      circle  id=pupilL   cx=302 cy=330 r=16 fill=#111111
+      circle  id=sparkL   cx=312 cy=320 r=6  fill=#FFFFFF opacity=.95
+      !-- eyelid rectangle (animated via yheight), clipped to eye shape --
+      rect id=lidL x=256 y=294 width=92 height=76 fill=#FF3B30 clip-path=url(#clipEyeL)
+      ellipse cx=302 cy=330 rx=46 ry=38 fill=none stroke=#111111 stroke-width=3
+    g
+
+    !-- right eye --
+    g id=eyeR
+      ellipse id=eyeRWhite cx=506 cy=330 rx=46 ry=38 fill=#FFFFFF
+      circle  id=pupilR   cx=506 cy=330 r=16 fill=#111111
+      circle  id=sparkR   cx=516 cy=320 r=6  fill=#FFFFFF opacity=.95
+      rect id=lidR x=460 y=294 width=92 height=76 fill=#FF3B30 clip-path=url(#clipEyeR)
+      ellipse cx=506 cy=330 rx=46 ry=38 fill=none stroke=#111111 stroke-width=3
+    g
+
+    !-- brows --
+    path id=browL d=M266 292 Q302 272 338 292 stroke=#111111 stroke-width=10 fill=none
+    path id=browR d=M470 292 Q506 272 542 292 stroke=#111111 stroke-width=10 fill=none
+
+    !-- mouth (morph this path 'd') --
+    path id=mouthPath d=M292 450 Q384 484 476 450
+          stroke=#1A1A1A stroke-width=26 fill=none
+  g
+
+  !-- ======= PROGRESS ARC (OPTIONAL; kept for integration) ======= --
+  !-- by default invisible; showanimate stroke-dash from code --
+  circle id=progressArc cx=384 cy=396 r=318 fill=none
+          stroke=currentColor stroke-width=16 stroke-linecap=round
+          opacity=0
+svg

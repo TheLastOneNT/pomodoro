@@ -30,29 +30,15 @@
       </header>
 
       <section class="stage" aria-live="polite">
-        <!-- Кнопка-помидор: PNG-тело + векторное лицо + прогресс-дуга -->
+        <!-- Кнопка-таймер -->
         <button
-          class="tomato3d"
+          class="tomato"
           id="tomatoBtn"
           aria-label="Старт/Пауза"
           aria-pressed="false"
         >
-          <!-- тело (PNG) -->
-          <img
-            class="tomato3d__img"
-            src="./assets/img/tomato.png"
-            alt="Помидор"
-          />
-
-          <!-- тень под плодом -->
-          <div class="tomato3d__shadow"></div>
-
-          <!-- ПРОГРЕСС (только заполняемая часть; без трека) -->
-          <svg
-            class="tomato3d__progress"
-            viewBox="0 0 360 360"
-            aria-hidden="true"
-          >
+          <!-- Дуга прогресса -->
+          <svg class="tomato__progress" viewBox="0 0 360 360">
             <circle
               id="progressArc"
               cx="180"
@@ -66,27 +52,16 @@
             />
           </svg>
 
-          <!-- ЛИЦО (векторные слои для анимации) -->
-          <div class="face" id="face">
-            <div class="eye eye--l"><i class="shine"></i></div>
-            <div class="eye eye--r"><i class="shine"></i></div>
+          <!-- PNG тело -->
+          <img
+            class="tomato__img"
+            src="./assets/img/tomato.png"
+            alt="Помидор"
+            draggable="false"
+          />
 
-            <!-- рот — SVG, чтобы красиво менять кривую -->
-            <svg
-              class="mouth"
-              viewBox="0 0 200 100"
-              preserveAspectRatio="xMidYMid meet"
-            >
-              <path
-                id="mouthPath"
-                d="M30 60 Q100 95 170 60"
-                fill="none"
-                stroke="#1a1a1a"
-                stroke-width="12"
-                stroke-linecap="round"
-              />
-            </svg>
-          </div>
+          <!-- Тень -->
+          <div class="tomato__shadow"></div>
         </button>
 
         <div class="readout">
