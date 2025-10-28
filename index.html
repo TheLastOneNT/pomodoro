@@ -8,14 +8,18 @@
     />
     <title>Pomodoro — Emoji</title>
 
+    <!-- стили приложения -->
     <link rel="stylesheet" href="./src/css/tokens.css" />
     <link rel="stylesheet" href="./src/css/base.css" />
     <link rel="stylesheet" href="./src/css/layout.css" />
     <link rel="stylesheet" href="./src/css/app.css" />
     <link rel="stylesheet" href="./src/css/tomato.css" />
+
+    <!-- НОВЫЙ sidebar -->
+    <link rel="stylesheet" href="./src/css/sidebar.css" />
   </head>
 
-  <body>
+  <body class="night">
     <main class="app" id="app">
       <header class="topbar">
         <div class="brand">🍅</div>
@@ -23,22 +27,25 @@
           <button id="themeToggle" class="icon-btn" aria-label="Тема">
             🌙
           </button>
-          <button id="openSettings" class="icon-btn" aria-label="Настройки">
-            ⚙️
+          <button id="openSettings" class="icon-btn" aria-label="Меню">
+            ☰
           </button>
         </div>
       </header>
 
       <section class="stage" aria-live="polite">
-        <!-- Кнопка-таймер -->
         <button
           class="tomato"
           id="tomatoBtn"
           aria-label="Старт/Пауза"
           aria-pressed="false"
         >
-          <!-- Дуга прогресса -->
-          <svg class="tomato__progress" viewBox="0 0 360 360">
+          <!-- прогресс-дуга -->
+          <svg
+            class="tomato__progress"
+            viewBox="0 0 360 360"
+            aria-hidden="true"
+          >
             <circle
               id="progressArc"
               cx="180"
@@ -51,17 +58,14 @@
               style="transform: rotate(-90deg); transform-origin: 180px 180px"
             />
           </svg>
-
-          <!-- PNG тело -->
+          <!-- тело -->
           <img
             class="tomato__img"
             src="./assets/img/tomato.png"
             alt="Помидор"
             draggable="false"
           />
-
-          <!-- Тень -->
-          <div class="tomato__shadow"></div>
+          <div class="tomato__shadow" aria-hidden="true"></div>
         </button>
 
         <div class="readout">
@@ -73,63 +77,66 @@
       <footer class="credit" aria-hidden="true"></footer>
     </main>
 
-    <!-- Off-canvas настройки -->
-    <aside id="settingsPanel" class="panel" aria-hidden="true">
-      <div class="panel__head">
-        <h2>Настройки</h2>
-        <button id="closeSettings" class="icon-btn" aria-label="Закрыть">
-          ✕
-        </button>
-      </div>
+    <!-- Sidebar -->
+    <div id="sidebarBackdrop" class="sb-backdrop" aria-hidden="true"></div>
+    <aside
+      id="sidebar"
+      class="sb"
+      aria-label="Sidebar настроек"
+      aria-hidden="true"
+    >
+      <div class="sb__inner">
+        <header class="sb__brand">
+          <div class="logo">🍅</div>
+          <div class="title">
+            <strong>Pomodoro</strong>
+            <span>Focus timer</span>
+          </div>
+          <button
+            id="sbCollapse"
+            class="sb__collapse"
+            aria-label="Свернуть/развернуть"
+          >
+            ›
+          </button>
+        </header>
 
-      <div class="panel__body">
-        <div class="setting">
-          <label class="setting__label">Пресет</label>
-          <select id="preset" class="sel">
-            <option value="25-5">25 / 5</option>
-            <option value="50-10">50 / 10</option>
-            <option value="custom">Кастом…</option>
-          </select>
+        <div class="sb__search">
+          <button class="icon">🔎</button>
+          <input type="text" placeholder="Поиск…" disabled />
         </div>
 
-        <div id="customRow" class="setting hidden">
-          <label class="setting__label">Кастомные интервалы</label>
-          <div class="grid2">
-            <label class="pill in">
-              <span>Фокус (мин)</span>
-              <input id="focusMin" type="number" min="1" max="120" value="25" />
-            </label>
-            <label class="pill in">
-              <span>Перерыв (мин)</span>
-              <input id="breakMin" type="number" min="1" max="60" value="5" />
+        <nav class="sb__nav">
+          <button class="sb__item is-active" data-section="plan">
+            <i>🗓️</i><span>План</span>
+          </button>
+          <button class="sb__item" data-section="options">
+            <i>⚙️</i><span>Опции</span>
+          </button>
+          <button class="sb__item" data-section="history">
+            <i>📈</i><span>История</span>
+          </button>
+        </nav>
+
+        <div class="sb__spacer"></div>
+
+        <div class="sb__footer">
+          <div class="sb__switch">
+            <i class="moon">🌙</i>
+            <span class="label">Тёмная тема</span>
+            <label class="switch">
+              <input id="sbTheme" type="checkbox" />
+              <i></i>
             </label>
           </div>
-          <button id="applyCustom" class="btn primary full">Применить</button>
-        </div>
-
-        <div class="setting">
-          <label class="setting__row">
-            <span>Авто-переход</span>
-            <input id="autoToggle" class="switch" type="checkbox" checked />
-          </label>
-        </div>
-
-        <div class="setting">
-          <label class="setting__row">
-            <span>Звук</span>
-            <input id="soundToggle" class="switch" type="checkbox" checked />
-          </label>
-        </div>
-
-        <div class="setting">
-          <button id="resetBtn" class="btn ghost full">Сбросить</button>
+          <button id="sbClose" class="sb__logout">
+            ✕ <span>Закрыть</span>
+          </button>
         </div>
       </div>
     </aside>
 
-    <div id="backdrop" class="backdrop" aria-hidden="true"></div>
-
-    <!-- встроенные короткие сигналы (без 404) -->
+    <!-- звуки (data-URI, чтобы не ловить 404) -->
     <audio
       id="sfxStart"
       preload="auto"
@@ -141,6 +148,8 @@
       src="data:audio/mp3;base64,//uQZAAAAAAAAAAAAAAAAAAAAAAAWGlin...AAAA"
     ></audio>
 
+    <!-- логика: ВАЖНО — sidebar первым, затем app -->
+    <script type="module" src="./src/js/sidebar.js"></script>
     <script type="module" src="./src/js/app.js"></script>
   </body>
 </html>
