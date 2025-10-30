@@ -1,5 +1,6 @@
-// Меню «План занятий» (две вкладки: Настроить / Выбрать) + открытие/закрытие.
-// Вся тема (день/ночь) — в app.js. Здесь только планы.
+// Меню «План занятий» (две вкладки: Настроить / Выбрать), единый список планов.
+// Любой план: ▶ запустить, ✎ редактировать, ✕ удалить.
+// Тема управляется в app.js, здесь её нет.
 
 import * as timer from "./timer.js";
 import { sync } from "./ui.js";
@@ -11,8 +12,21 @@ const clamp = (v, a, b) => Math.min(b, Math.max(a, v | 0));
 const totalMinutes = (f, b, c) => c * (f + b);
 
 // storage
-const KEY_CUSTOM = "pomodoro:plans:custom"; // массив пользовательских планов
-// элемент плана: { id, name, focus, break, cycles, total, type: 'custom'|'preset' }
+const KEY_PLANS = "pomodoro:plans:all"; // массив планов любого типа
+
+function lsGet(key, def = []) {
+  try {
+    const v = localStorage.getItem(key);
+    return v ? JSON.parse(v) : def;
+  } catch {
+    return def;
+  }
+}
+function lsSet(key, val) {
+  try {
+    localStorage.setItem(key, JSON.stringify(val));
+  } catch {}
+}
 
 // ---------- open/close ----------
 const openBtn = $("#openSettings");
@@ -39,102 +53,8 @@ window.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closeSB();
 });
 
-// ---------- tabs ----------
-const tabBtns = $$(".seg__btn[data-mode]");
-const panes = $$(".pane");
-function openTab(mode) {
-  tabBtns.forEach((b) =>
-    b.classList.toggle("is-active", b.dataset.mode === mode)
-  );
-  panes.forEach((p) => p.classList.toggle("is-open", p.dataset.pane === mode));
-}
-tabBtns.forEach((b) =>
-  b.addEventListener("click", () => openTab(b.dataset.mode))
-);
-openTab("build");
-
-// ---------- BUILD (Настроить) ----------
-const bFocus = $("#bFocus");
-const bBreak = $("#bBreak");
-const bCycles = $("#bCycles");
-const bMeta = $("#bMeta");
-const bApply = $("#bApply");
-const bSaveToggle = $("#bSaveToggle");
-const bSaveBlock = $("#bSaveBlock");
-const bName = $("#bName");
-const bSave = $("#bSave");
-
-function updateBuildMeta() {
-  const f = clamp(bFocus?.valueAsNumber || 25, 1, 180);
-  const br = clamp(bBreak?.valueAsNumber || 5, 1, 60);
-  const c = clamp(bCycles?.valueAsNumber || 4, 1, 20);
-  if (bMeta)
-    bMeta.textContent = `${f}/${br} ×${c} ≈ ${totalMinutes(f, br, c)} мин`;
-}
-["input", "change"].forEach((ev) => {
-  bFocus?.addEventListener(ev, updateBuildMeta);
-  bBreak?.addEventListener(ev, updateBuildMeta);
-  bCycles?.addEventListener(ev, updateBuildMeta);
-});
-updateBuildMeta();
-
-bApply?.addEventListener("click", () => {
-  const f = clamp(bFocus?.valueAsNumber || 25, 1, 180);
-  const br = clamp(bBreak?.valueAsNumber || 5, 1, 60);
-  const c = clamp(bCycles?.valueAsNumber || 4, 1, 20);
-  timer.reset();
-  timer.setPreset(f, br);
-  timer.setCycles(c);
-  sync();
-});
-
-bSaveToggle?.addEventListener("click", () => {
-  bSaveBlock?.classList.toggle("hidden");
-  bName?.focus();
-});
-
-function readCustom() {
-  try {
-    return JSON.parse(localStorage.getItem(KEY_CUSTOM) || "[]");
-  } catch {
-    return [];
-  }
-}
-function writeCustom(arr) {
-  try {
-    localStorage.setItem(KEY_CUSTOM, JSON.stringify(arr));
-  } catch {}
-}
-
-bSave?.addEventListener("click", () => {
-  const name = (bName?.value || "").trim() || "Мой план";
-  const f = clamp(bFocus?.valueAsNumber || 25, 1, 180);
-  const br = clamp(bBreak?.valueAsNumber || 5, 1, 60);
-  const c = clamp(bCycles?.valueAsNumber || 4, 1, 20);
-  const item = {
-    id: `${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`,
-    name,
-    focus: f,
-    break: br,
-    cycles: c,
-    total: totalMinutes(f, br, c),
-    type: "custom",
-  };
-  const arr = readCustom();
-  arr.unshift(item);
-  writeCustom(arr);
-  bSaveBlock?.classList.add("hidden");
-  bName && (bName.value = "");
-  renderMine();
-  openTab("pick");
-});
-
-// ---------- PICK (Выбрать) ----------
-const listMine = $("#listMine");
-const listPresets = $("#listPresets");
-
-// готовые пресеты (можно дополнять/менять)
-const PRESETS = [
+// ---------- default presets seed (попадут в общий список как type:'preset') ----------
+const PRESET_SEED = [
   {
     id: "p_1h_25_5_x2",
     name: "1 час",
@@ -161,7 +81,7 @@ const PRESETS = [
   },
   {
     id: "p_deep_90_20",
-    name: "Глубокая",
+    name: "Глубокая работа",
     focus: 90,
     break: 20,
     cycles: 1,
@@ -185,93 +105,223 @@ const PRESETS = [
   },
 ].map((p) => ({ ...p, total: totalMinutes(p.focus, p.break, p.cycles) }));
 
-function planRow(p, removable) {
+// миграция/инициализация
+(function ensureSeed() {
+  const cur = lsGet(KEY_PLANS, null);
+  if (!cur || !Array.isArray(cur) || cur.length === 0) {
+    lsSet(KEY_PLANS, PRESET_SEED.slice());
+  } else {
+    // если в списке нет ни одного пресета по id — можно дозалить недостающие
+    const ids = new Set(cur.map((x) => x.id));
+    let changed = false;
+    for (const p of PRESET_SEED) {
+      if (!ids.has(p.id)) {
+        cur.push(p);
+        changed = true;
+      }
+    }
+    if (changed) lsSet(KEY_PLANS, cur);
+  }
+})();
+
+// ---------- tabs ----------
+const tabBtns = $$(".seg__btn[data-mode]");
+const panes = $$(".pane");
+function openTab(mode) {
+  tabBtns.forEach((b) =>
+    b.classList.toggle("is-active", b.dataset.mode === mode)
+  );
+  panes.forEach((p) => p.classList.toggle("is-open", p.dataset.pane === mode));
+}
+tabBtns.forEach((b) =>
+  b.addEventListener("click", () => openTab(b.dataset.mode))
+);
+openTab("build");
+
+// ---------- BUILD (Настроить) ----------
+const bFocus = $("#bFocus");
+const bBreak = $("#bBreak");
+const bCycles = $("#bCycles");
+const bMeta = $("#bMeta");
+const bApply = $("#bApply");
+const bSaveToggle = $("#bSaveToggle");
+const bSaveBlock = $("#bSaveBlock");
+const bName = $("#bName");
+const bSave = $("#bSave");
+
+const bEditTag = $("#bEditTag");
+const bEditName = $("#bEditName");
+const bCancelEdit = $("#bCancelEdit");
+
+let editId = null; // если редактируем существующий план
+
+function updateBuildMeta() {
+  const f = clamp(bFocus?.valueAsNumber || 25, 1, 180);
+  const br = clamp(bBreak?.valueAsNumber || 5, 1, 60);
+  const c = clamp(bCycles?.valueAsNumber || 4, 1, 20);
+  if (bMeta)
+    bMeta.textContent = `${f}/${br} ×${c} ≈ ${totalMinutes(f, br, c)} мин`;
+}
+["input", "change"].forEach((ev) => {
+  bFocus?.addEventListener(ev, updateBuildMeta);
+  bBreak?.addEventListener(ev, updateBuildMeta);
+  bCycles?.addEventListener(ev, updateBuildMeta);
+});
+updateBuildMeta();
+
+function resetEditUI() {
+  editId = null;
+  bEditTag?.classList.add("hidden");
+  bCancelEdit?.classList.add("hidden");
+  bSaveBlock?.classList.add("hidden");
+  bSave && (bSave.textContent = "Сохранить");
+  bName && (bName.value = "");
+}
+
+bApply?.addEventListener("click", () => {
+  const f = clamp(bFocus?.valueAsNumber || 25, 1, 180);
+  const br = clamp(bBreak?.valueAsNumber || 5, 1, 60);
+  const c = clamp(bCycles?.valueAsNumber || 4, 1, 20);
+  timer.reset();
+  timer.setPreset(f, br);
+  timer.setCycles(c);
+  sync();
+});
+
+bSaveToggle?.addEventListener("click", () => {
+  bSaveBlock?.classList.toggle("hidden");
+  bName?.focus();
+});
+
+bCancelEdit?.addEventListener("click", () => {
+  resetEditUI();
+});
+
+bSave?.addEventListener("click", () => {
+  const f = clamp(bFocus?.valueAsNumber || 25, 1, 180);
+  const br = clamp(bBreak?.valueAsNumber || 5, 1, 60);
+  const c = clamp(bCycles?.valueAsNumber || 4, 1, 20);
+  const name =
+    (bName?.value || "").trim() ||
+    (editId ? bEditName?.textContent || "План" : "Мой план");
+
+  const plans = lsGet(KEY_PLANS, []);
+  if (editId) {
+    // обновляем существующий
+    const idx = plans.findIndex((x) => x.id === editId);
+    if (idx >= 0) {
+      plans[idx] = {
+        ...plans[idx],
+        name,
+        focus: f,
+        break: br,
+        cycles: c,
+        total: totalMinutes(f, br, c),
+      };
+      lsSet(KEY_PLANS, plans);
+      renderPlans();
+      resetEditUI();
+      openTab("pick");
+      return;
+    }
+  }
+
+  // создаём новый кастомный
+  const item = {
+    id: `${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`,
+    name,
+    focus: f,
+    break: br,
+    cycles: c,
+    total: totalMinutes(f, br, c),
+    type: "custom",
+  };
+  plans.unshift(item);
+  lsSet(KEY_PLANS, plans);
+  renderPlans();
+  resetEditUI();
+  openTab("pick");
+});
+
+// ---------- PICK (Выбрать) ----------
+const listPlans = $("#listPlans");
+
+function planRow(p) {
   const div = document.createElement("div");
   div.className = "item";
   const meta = `${p.focus}/${p.break} ×${p.cycles} · ≈ ${p.total} мин`;
   div.innerHTML = `
-    <div class="name">${p.name}</div>
-    <div class="meta">${meta}</div>
-    <div class="act">
-      <button class="icon" data-act="run" data-id="${p.id}">▶</button>
-      ${
-        removable
-          ? `<button class="icon" data-act="del" data-id="${p.id}">✕</button>`
-          : ""
-      }
-    </div>
-  `;
+  <div class="text">
+    <span class="name">${p.name}</span>
+    <span class="meta">• ${p.focus}/${p.break} ×${p.cycles} · ≈ ${p.total} мин</span>
+  </div>
+  <div class="act">
+    <button class="icon" data-act="run"  data-id="${p.id}" aria-label="Запустить">▶</button>
+    <button class="icon" data-act="edit" data-id="${p.id}" aria-label="Редактировать">✎</button>
+    <button class="icon" data-act="del"  data-id="${p.id}" aria-label="Удалить">✕</button>
+  </div>
+`;
   return div;
 }
 
-function renderMine() {
-  if (!listMine) return;
-  const arr = readCustom();
-  listMine.innerHTML = "";
+function renderPlans() {
+  if (!listPlans) return;
+  const arr = lsGet(KEY_PLANS, []);
+  listPlans.innerHTML = "";
   if (!arr.length) {
     const empty = document.createElement("div");
     empty.className = "item";
-    empty.innerHTML = `<div class="name">Пусто</div><div class="meta">Сохрани план во вкладке «Настроить»</div><div></div>`;
-    listMine.appendChild(empty);
+    empty.innerHTML = `<div class="name">Нет планов</div><div class="meta">Сохрани план во вкладке «Настроить»</div><div></div>`;
+    listPlans.appendChild(empty);
     return;
   }
-  arr.forEach((p) => listMine.appendChild(planRow(p, true)));
+  arr.forEach((p) => listPlans.appendChild(planRow(p)));
 }
-function renderPresets() {
-  if (!listPresets) return;
-  listPresets.innerHTML = "";
-  PRESETS.forEach((p) => listPresets.appendChild(planRow(p, false)));
-}
-renderMine();
-renderPresets();
+renderPlans();
 
 function applyPlan(p) {
   timer.reset();
   timer.setPreset(p.focus, p.break);
   timer.setCycles(p.cycles);
   sync();
-  // меню можно оставить открытым; если хочешь — закрывай:
-  // closeSB();
 }
 
-[listMine, listPresets].forEach((list) => {
-  list?.addEventListener("click", (e) => {
-    const btn = e.target.closest("button.icon");
-    if (!btn) return;
-    const act = btn.dataset.act;
-    const id = btn.dataset.id;
-    if (!act || !id) return;
+listPlans?.addEventListener("click", (e) => {
+  const btn = e.target.closest("button.icon");
+  if (!btn) return;
+  const id = btn.dataset.id;
+  const act = btn.dataset.act;
+  if (!id || !act) return;
 
-    if (list === listPresets) {
-      const p = PRESETS.find((x) => x.id === id);
-      if (!p) return;
-      if (act === "run") applyPlan(p);
-      // удалять пресеты нельзя
-      return;
+  const plans = lsGet(KEY_PLANS, []);
+  const idx = plans.findIndex((x) => x.id === id);
+  if (idx < 0) return;
+  const plan = plans[idx];
+
+  if (act === "run") {
+    applyPlan(plan);
+  } else if (act === "del") {
+    plans.splice(idx, 1);
+    lsSet(KEY_PLANS, plans);
+    renderPlans();
+  } else if (act === "edit") {
+    // переключаемся на «Настроить», подставляем значения и включаем режим редактирования
+    openTab("build");
+    if (bFocus) bFocus.value = String(plan.focus);
+    if (bBreak) bBreak.value = String(plan.break);
+    if (bCycles) bCycles.value = String(plan.cycles);
+    updateBuildMeta();
+
+    bSaveBlock?.classList.remove("hidden");
+    bEditTag?.classList.remove("hidden");
+    bCancelEdit?.classList.remove("hidden");
+    if (bEditName) bEditName.textContent = plan.name;
+    if (bName) {
+      bName.value = plan.name;
+      bName.focus();
     }
+    if (bSave) bSave.textContent = "Сохранить изменения";
 
-    // Мои планы
-    let arr = readCustom();
-    const idx = arr.findIndex((x) => x.id === id);
-    if (idx < 0) return;
-
-    if (act === "run") applyPlan(arr[idx]);
-    else if (act === "del") {
-      arr.splice(idx, 1);
-      writeCustom(arr);
-      renderMine();
-    }
-  });
-});
-
-// ---------- Accordion (категории) ----------
-const accBtns = $$(".acc[data-acc]");
-accBtns.forEach((btn) => {
-  btn.addEventListener("click", () => {
-    const key = btn.dataset.acc;
-    const panel = key === "mine" ? $("#accMine") : $("#accPresets");
-    const open = btn.getAttribute("aria-expanded") === "true";
-    btn.setAttribute("aria-expanded", open ? "false" : "true");
-    panel?.classList.toggle("is-open", !open);
-  });
+    editId = plan.id;
+  }
 });

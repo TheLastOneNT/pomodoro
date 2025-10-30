@@ -150,6 +150,10 @@
 
           <div class="plan__meta" id="bMeta">25/5 ×4 ≈ 120 мин</div>
 
+          <div id="bEditTag" class="edit-tag hidden">
+            Редактирование: <b id="bEditName"></b>
+          </div>
+
           <div class="row-between">
             <button id="bApply" class="btn">▶ Применить</button>
             <button id="bSaveToggle" class="btn ghost">
@@ -157,7 +161,7 @@
             </button>
           </div>
 
-          <!-- Появляется только после "Сохранить план" -->
+          <!-- Появляется при сохранении или редактировании -->
           <div id="bSaveBlock" class="save-row hidden">
             <label class="pill in">
               <span>Название плана</span>
@@ -168,32 +172,20 @@
               />
             </label>
             <div class="row-between">
-              <span class="plan__hint">Будет добавлен в «Мои планы»</span>
-              <button id="bSave" class="btn">Сохранить</button>
+              <span class="plan__hint">Сохранится в «Планы»</span>
+              <div class="row-between" style="gap: 8px">
+                <button id="bCancelEdit" class="btn ghost hidden">
+                  Отмена
+                </button>
+                <button id="bSave" class="btn">Сохранить</button>
+              </div>
             </div>
           </div>
         </section>
 
         <!-- ВКЛАДКА: ВЫБРАТЬ -->
         <section class="pane" data-pane="pick">
-          <!-- Категория: Мои планы -->
-          <button class="acc" data-acc="mine" aria-expanded="true">
-            <span>Мои планы</span><i class="chev">▾</i>
-          </button>
-          <div class="acc__panel is-open" id="accMine">
-            <div id="listMine" class="list scroll"></div>
-          </div>
-
-          <!-- разделитель -->
-          <hr class="sb__hair" />
-
-          <!-- Категория: Готовые пресеты -->
-          <button class="acc" data-acc="presets" aria-expanded="true">
-            <span>Готовые пресеты</span><i class="chev">▾</i>
-          </button>
-          <div class="acc__panel is-open" id="accPresets">
-            <div id="listPresets" class="list scroll"></div>
-          </div>
+          <div class="list scroll" id="listPlans"></div>
         </section>
 
         <div class="sb__spacer"></div>
