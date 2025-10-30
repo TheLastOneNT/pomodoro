@@ -31,16 +31,19 @@ body.day {
   opacity: 1;
   pointer-events: auto;
 }
+
+/* >>> Меню теперь справа <<< */
 .sb {
   position: fixed;
   top: 0;
-  left: 0;
+  right: 0; /* было left: 0 */
+  left: auto;
   height: 100svh;
   width: var(--sb-w);
-  transform: translateX(-100%);
+  transform: translateX(100%); /* было -100% */
   background: var(--sb-bg);
   color: var(--ink);
-  border-right: 1px solid var(--sb-line);
+  border-left: 1px solid var(--sb-line); /* было border-right */
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
   transition: transform 0.28s cubic-bezier(0.2, 0.6, 0.2, 1);
   z-index: 80;
@@ -48,6 +51,7 @@ body.day {
 .sb.show {
   transform: none;
 }
+
 .sb__inner {
   height: 100%;
   display: flex;
@@ -265,6 +269,7 @@ body.day {
   padding: 10px;
 }
 
+/* wheels (минимальная копия) */
 .wheels {
   display: grid;
   gap: 10px;

@@ -8,7 +8,7 @@
     />
     <title>Pomodoro — Emoji</title>
 
-    <!-- стили проекта -->
+    <!-- Стили проекта -->
     <link rel="stylesheet" href="./src/css/tokens.css" />
     <link rel="stylesheet" href="./src/css/base.css" />
     <link rel="stylesheet" href="./src/css/layout.css" />
@@ -77,7 +77,7 @@
       <footer class="credit" aria-hidden="true"></footer>
     </main>
 
-    <!-- меню -->
+    <!-- Меню (sidebar) -->
     <div id="sidebarBackdrop" class="sb-backdrop" aria-hidden="true"></div>
     <aside id="sidebar" class="sb" aria-label="Настройки" aria-hidden="true">
       <div class="sb__inner">
@@ -150,7 +150,7 @@
             </div>
           </div>
 
-          <!-- мост для текущей логики sidebar.js (скрытые inputs) -->
+          <!-- Мост для старой логики sidebar.js (скрытые inputs) -->
           <div class="inputs-bridge hidden" aria-hidden="true">
             <div class="grid2">
               <label class="pill in"
@@ -232,7 +232,7 @@
       </div>
     </aside>
 
-    <!-- звуки -->
+    <!-- Звуки -->
     <audio
       id="sfxStart"
       preload="auto"
@@ -259,7 +259,6 @@
           </button>
         </header>
 
-        <!-- Кнопка Google -->
         <button
           id="loginGoogle"
           class="btn btn-google"
@@ -270,17 +269,15 @@
           <span>Продолжить с Google</span>
         </button>
 
-        <!-- разделитель -->
         <div class="or-row" aria-hidden="true">
           <span></span><em>или</em><span></span>
         </div>
 
-        <!-- Email/Пароль -->
         <form id="authForm" class="auth-form" autocomplete="on">
           <label
             >Email
-            <input id="authEmail" type="email" autocomplete="email" required />
-          </label>
+            <input id="authEmail" type="email" autocomplete="email" required
+          /></label>
           <label
             >Пароль
             <input
@@ -289,8 +286,7 @@
               minlength="6"
               autocomplete="current-password"
               required
-            />
-          </label>
+          /></label>
           <div class="row">
             <select id="authMode" aria-label="Режим">
               <option value="login">Войти</option>
@@ -306,99 +302,7 @@
       </div>
     </div>
 
-    <!-- логика -->
-    <script type="module" src="./src/js/sidebar.js"></script>
-    <script type="module" src="./src/js/app.js"></script>
-
-    <!-- wheels init -->
-    <script type="module">
-      const rowH = 40,
-        PAD = 3;
-      const bridge = {
-        focus: document.getElementById("bFocus"),
-        break: document.getElementById("bBreak"),
-        cycles: document.getElementById("bCycles"),
-      };
-      const makeList = (min, max) => {
-        const ul = document.createElement("ul");
-        for (let i = 0; i < PAD; i++)
-          ul.appendChild(document.createElement("li")).textContent = "";
-        for (let v = min; v <= max; v++) {
-          const li = document.createElement("li");
-          li.textContent = v;
-          li.dataset.val = v;
-          ul.appendChild(li);
-        }
-        for (let i = 0; i < PAD; i++)
-          ul.appendChild(document.createElement("li")).textContent = "";
-        return ul;
-      };
-      const scrollToVal = (el, min, val, smooth = true) => {
-        const top = rowH * PAD + (val - min) * rowH;
-        el.scrollTo({ top, behavior: smooth ? "smooth" : "auto" });
-      };
-      const nearestVal = (el, min, max) => {
-        const idx = Math.round((el.scrollTop - rowH * PAD) / rowH);
-        return Math.max(min, Math.min(max, min + idx));
-      };
-      const updateBridge = (key, val) => {
-        const input = bridge[key];
-        if (!input) return;
-        input.value = String(val);
-        input.dispatchEvent(new Event("input", { bubbles: true }));
-        input.dispatchEvent(new Event("change", { bubbles: true }));
-      };
-      const markActive = (el, min, max) => {
-        const val = nearestVal(el, min, max);
-        el.querySelectorAll("li").forEach((li) =>
-          li.classList.remove("is-active")
-        );
-        const idx = val - min + PAD,
-          li = el.querySelectorAll("li")[idx];
-        if (li) li.classList.add("is-active");
-      };
-      document.querySelectorAll(".wheel").forEach((wheelEl) => {
-        const min = parseInt(wheelEl.dataset.min || "1", 10);
-        const max = parseInt(wheelEl.dataset.max || "10", 10);
-        const value = parseInt(wheelEl.dataset.value || String(min), 10);
-        const key = wheelEl.dataset.key;
-        const ul = makeList(min, max);
-        wheelEl.appendChild(ul);
-        scrollToVal(wheelEl, min, value, false);
-        updateBridge(key, value);
-        markActive(wheelEl, min, max);
-        let t;
-        wheelEl.addEventListener("scroll", () => {
-          clearTimeout(t);
-          t = setTimeout(() => {
-            const val = nearestVal(wheelEl, min, max);
-            scrollToVal(wheelEl, min, val);
-            updateBridge(key, val);
-            markActive(wheelEl, min, max);
-          }, 80);
-        });
-        wheelEl.addEventListener("click", (e) => {
-          const li = e.target.closest("li[data-val]");
-          if (!li) return;
-          const val = parseInt(li.dataset.val, 10);
-          scrollToVal(wheelEl, min, val);
-          updateBridge(key, val);
-          markActive(wheelEl, min, max);
-        });
-        wheelEl.addEventListener(
-          "wheel",
-          (e) => {
-            e.stopPropagation();
-          },
-          { passive: true }
-        );
-      });
-    </script>
-
-    <!-- auth init -->
-    <script type="module">
-      import { initAuth } from "./src/js/auth.js";
-      initAuth();
-    </script>
+    <!-- ЕДИНАЯ точка входа (модули импортируются изнутри) -->
+    <script type="module" src="./src/js/main.js"></script>
   </body>
 </html>

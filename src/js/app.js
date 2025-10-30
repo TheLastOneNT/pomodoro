@@ -39,26 +39,40 @@ function applyThemeClass() {
   document.body.classList.toggle("day", state.theme === "day");
   document.body.classList.toggle("night", state.theme !== "day");
 }
-function renderThemeIcon() {
+
+/**
+ * Иконка отражает ТЕКУЩУЮ тему:
+ *  - night  -> 🌙
+ *  - day    -> 🌞
+ * Tooltip/aria-label описывает СЛЕДУЮЩЕЕ действие (что будет при клике).
+ */
+function renderThemeButton() {
   if (!themeToggle) return;
-  themeToggle.textContent = state.theme === "day" ? "🌞" : "🌙";
-  themeToggle.setAttribute(
-    "aria-label",
-    state.theme === "day" ? "Сменить на тёмную тему" : "Сменить на светлую тему"
-  );
+  const curIcon = state.theme === "day" ? "🌞" : "🌙";
+  const nextLabel =
+    state.theme === "day"
+      ? "Сменить на тёмную тему"
+      : "Сменить на светлую тему";
+
+  themeToggle.textContent = curIcon;
+  themeToggle.setAttribute("aria-label", nextLabel);
+  themeToggle.setAttribute("title", nextLabel);
 }
+
 function setTheme(mode /* 'day' | 'night' */) {
   state.theme = mode === "day" ? "day" : "night";
   try {
     localStorage.setItem(THEME_KEY, state.theme);
   } catch {}
   applyThemeClass();
-  renderThemeIcon();
+  renderThemeButton();
+
   document.dispatchEvent(
     new CustomEvent("theme:changed", {
       detail: { night: state.theme !== "day" },
     })
   );
+
   sync();
   persist();
 }
@@ -128,6 +142,7 @@ on(preset, "change", () => {
     persist();
   }
 });
+
 on(applyCustom, "click", () => {
   const f = Math.max(1, toInt(focusMin?.value, 25));
   const b = Math.max(1, toInt(breakMin?.value, 5));
@@ -136,17 +151,20 @@ on(applyCustom, "click", () => {
   sync();
   persist();
 });
+
 on(autoToggle, "change", () => {
   if (typeof timer.setAuto === "function") timer.setAuto(!!autoToggle.checked);
   state.auto = !!autoToggle.checked;
   sync();
   persist();
 });
+
 on(soundToggle, "change", () => {
   state.sound = !!soundToggle.checked;
   sync();
   persist();
 });
+
 on(resetBtn, "click", () => {
   timer.reset();
   sync();
