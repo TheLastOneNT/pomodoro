@@ -286,6 +286,74 @@ function applyPlan(p) {
   sync();
 }
 
+function initWheel(el) {
+  const min = +el.dataset.min | 0,
+    max = +el.dataset.max | 0,
+    value = +el.dataset.value | 0;
+  const ul = document.createElement("ul");
+  // добавим «буферы» сверху/снизу чтобы центральная строка стала по центру
+  const PAD = 3; // три пустых места
+  for (let i = 0; i < PAD; i++)
+    ul.appendChild(document.createElement("li")).textContent = "";
+  for (let v = min; v <= max; v++) {
+    const li = document.createElement("li");
+    li.textContent = v;
+    li.dataset.val = v;
+    ul.appendChild(li);
+  }
+  for (let i = 0; i < PAD; i++)
+    ul.appendChild(document.createElement("li")).textContent = "";
+  el.appendChild(ul);
+
+  const rowH = 36,
+    padTop = rowH * PAD;
+  function scrollToVal(val, smooth = true) {
+    const clamped = Math.max(min, Math.min(max, val | 0));
+    el.scrollTo({
+      top: padTop + (clamped - min) * rowH,
+      behavior: smooth ? "smooth" : "auto",
+    });
+  }
+  // стартовая позиция
+  scrollToVal(value, false);
+
+  // «прилипание» к ближней строке
+  let t;
+  el.addEventListener("scroll", () => {
+    clearTimeout(t);
+    t = setTimeout(() => {
+      const idx = Math.round((el.scrollTop - padTop) / rowH);
+      const val = Math.max(min, Math.min(max, min + idx));
+      scrollToVal(val);
+      el.dispatchEvent(
+        new CustomEvent("change", {
+          detail: { key: el.dataset.key, value: val },
+        })
+      );
+    }, 80);
+  });
+  // клик по строке
+  el.addEventListener("click", (e) => {
+    const li = e.target.closest("li[data-val]");
+    if (!li) return;
+    scrollToVal(+li.dataset.val);
+  });
+}
+
+document.querySelectorAll(".wheel").forEach(initWheel);
+
+// связываем с расчётом меты
+const sel = { focus: 25, break: 5, cycles: 4 };
+document.querySelectorAll(".wheel").forEach((w) => {
+  w.addEventListener("change", (e) => {
+    sel[e.detail.key] = e.detail.value;
+    const total = sel.cycles * (sel.focus + sel.break);
+    document.getElementById(
+      "bMeta"
+    ).textContent = `${sel.focus}/${sel.break} ×${sel.cycles} ≈ ${total} мин`;
+  });
+});
+
 listPlans?.addEventListener("click", (e) => {
   const btn = e.target.closest("button.icon");
   if (!btn) return;

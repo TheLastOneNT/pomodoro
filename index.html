@@ -8,13 +8,141 @@
     />
     <title>Pomodoro — Emoji</title>
 
-    <!-- стили -->
+    <!-- стили проекта -->
     <link rel="stylesheet" href="./src/css/tokens.css" />
     <link rel="stylesheet" href="./src/css/base.css" />
     <link rel="stylesheet" href="./src/css/layout.css" />
     <link rel="stylesheet" href="./src/css/app.css" />
     <link rel="stylesheet" href="./src/css/tomato.css" />
     <link rel="stylesheet" href="./src/css/sidebar.css" />
+
+    <!-- локальные стили iOS-колёс -->
+    <style>
+      /* ===== iOS-like wheels ===== */
+      .wheels {
+        display: grid;
+        gap: 12px;
+      }
+      .wheel-card {
+        position: relative;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 12px;
+        background: var(--sb-card);
+        border: 1px solid var(--sb-line);
+        border-radius: 20px;
+        padding: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18),
+          inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      }
+      .wheel-wrap {
+        display: grid;
+        grid-template-rows: auto 1fr;
+        gap: 8px;
+        min-width: 0;
+      }
+      .wheel-label {
+        text-align: center;
+        font-weight: 900;
+        letter-spacing: 0.2px;
+        color: var(--muted);
+        font-size: 12px;
+        text-transform: uppercase;
+      }
+
+      .wheel {
+        position: relative;
+        height: 184px;
+        overflow: auto;
+        border-radius: 14px;
+        background: radial-gradient(
+            120% 60% at 50% -10%,
+            rgba(255, 255, 255, 0.06),
+            transparent 60%
+          ),
+          linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.02),
+            rgba(0, 0, 0, 0.06)
+          );
+        border: 1px solid var(--sb-line);
+        scroll-snap-type: y mandatory;
+        -webkit-overflow-scrolling: touch;
+        mask-image: linear-gradient(
+          to bottom,
+          transparent 0,
+          #000 16%,
+          #000 84%,
+          transparent 100%
+        );
+      }
+      .wheel::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+      }
+
+      .wheel ul {
+        list-style: none;
+        margin: 0;
+        padding: 8px 0;
+        display: grid;
+        gap: 6px;
+      }
+      .wheel li {
+        height: 40px;
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+        font-size: 18px;
+        letter-spacing: 0.2px;
+        color: var(--muted);
+        scroll-snap-align: center;
+        transform: translateZ(0);
+        transition: transform 0.18s ease, color 0.18s ease, opacity 0.18s ease;
+        opacity: 0.55;
+      }
+      .wheel li.is-active {
+        color: var(--ink);
+        transform: scale(1.08);
+        opacity: 1;
+        text-shadow: 0 0 1px rgba(0, 0, 0, 0.2);
+      }
+
+      /* центральная «лента» выбора */
+      .wheel-highlight {
+        pointer-events: none;
+        position: absolute;
+        left: 12px;
+        right: 12px;
+        top: 50%;
+        height: 40px;
+        transform: translateY(-50%);
+        border-radius: 10px;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.08),
+          rgba(255, 255, 255, 0.02)
+        );
+        box-shadow: inset 0 0 0 1px var(--sb-line),
+          inset 0 10px 16px rgba(0, 0, 0, 0.12),
+          inset 0 -10px 16px rgba(0, 0, 0, 0.1);
+      }
+
+      /* адаптив: на узких экранах циклы вниз */
+      @media (max-width: 480px) {
+        .wheel-card {
+          grid-template-columns: 1fr 1fr;
+        }
+        .wheel-card .wheel-wrap:last-child {
+          grid-column: 1 / -1;
+        }
+      }
+
+      /* мостовые inputs скрыты — нужны для совместимости с текущим sidebar.js */
+      .inputs-bridge.hidden {
+        display: none !important;
+      }
+    </style>
   </head>
 
   <body class="night">
@@ -55,7 +183,6 @@
               style="transform: rotate(-90deg); transform-origin: 180px 180px"
             />
           </svg>
-
           <img
             class="tomato__img"
             src="./assets/img/tomato.png"
@@ -111,42 +238,84 @@
 
         <!-- ВКЛАДКА: НАСТРОИТЬ -->
         <section class="pane is-open" data-pane="build">
-          <div class="grid2">
+          <!-- iOS-like wheels -->
+          <div class="wheels" aria-label="Колёсики выбора">
+            <div class="wheel-card">
+              <div class="wheel-wrap">
+                <div class="wheel-label">Фокус</div>
+                <div
+                  class="wheel"
+                  data-key="focus"
+                  data-min="1"
+                  data-max="180"
+                  data-value="25"
+                  aria-label="Фокус (мин)"
+                ></div>
+              </div>
+              <div class="wheel-wrap">
+                <div class="wheel-label">Перерыв</div>
+                <div
+                  class="wheel"
+                  data-key="break"
+                  data-min="1"
+                  data-max="60"
+                  data-value="5"
+                  aria-label="Перерыв (мин)"
+                ></div>
+              </div>
+              <div class="wheel-wrap">
+                <div class="wheel-label">Циклы</div>
+                <div
+                  class="wheel"
+                  data-key="cycles"
+                  data-min="1"
+                  data-max="20"
+                  data-value="4"
+                  aria-label="Циклы"
+                ></div>
+              </div>
+              <div class="wheel-highlight" aria-hidden="true"></div>
+            </div>
+          </div>
+
+          <!-- мост для текущей логики sidebar.js (скрытые inputs) -->
+          <div class="inputs-bridge hidden" aria-hidden="true">
+            <div class="grid2">
+              <label class="pill in">
+                <span>Фокус, мин</span>
+                <input
+                  id="bFocus"
+                  type="number"
+                  min="1"
+                  max="180"
+                  step="1"
+                  value="25"
+                />
+              </label>
+              <label class="pill in">
+                <span>Перерыв, мин</span>
+                <input
+                  id="bBreak"
+                  type="number"
+                  min="1"
+                  max="60"
+                  step="1"
+                  value="5"
+                />
+              </label>
+            </div>
             <label class="pill in">
-              <span>Фокус, мин</span>
+              <span>Циклы</span>
               <input
-                id="bFocus"
+                id="bCycles"
                 type="number"
                 min="1"
-                max="180"
+                max="20"
                 step="1"
-                value="25"
-              />
-            </label>
-            <label class="pill in">
-              <span>Перерыв, мин</span>
-              <input
-                id="bBreak"
-                type="number"
-                min="1"
-                max="60"
-                step="1"
-                value="5"
+                value="4"
               />
             </label>
           </div>
-
-          <label class="pill in">
-            <span>Циклы</span>
-            <input
-              id="bCycles"
-              type="number"
-              min="1"
-              max="20"
-              step="1"
-              value="4"
-            />
-          </label>
 
           <div class="plan__meta" id="bMeta">25/5 ×4 ≈ 120 мин</div>
 
@@ -213,5 +382,100 @@
     <!-- логика -->
     <script type="module" src="./src/js/sidebar.js"></script>
     <script type="module" src="./src/js/app.js"></script>
+
+    <!-- инициализация колёс с подсветкой активной строки и синхронизацией -->
+    <script type="module">
+      const rowH = 40;
+      const PAD = 3; // пустые строки сверху/снизу, чтобы активная была по центру
+      const bridge = {
+        focus: document.getElementById("bFocus"),
+        break: document.getElementById("bBreak"),
+        cycles: document.getElementById("bCycles"),
+      };
+
+      function makeList(min, max) {
+        const ul = document.createElement("ul");
+        for (let i = 0; i < PAD; i++)
+          ul.appendChild(document.createElement("li")).textContent = "";
+        for (let v = min; v <= max; v++) {
+          const li = document.createElement("li");
+          li.textContent = v;
+          li.dataset.val = v;
+          ul.appendChild(li);
+        }
+        for (let i = 0; i < PAD; i++)
+          ul.appendChild(document.createElement("li")).textContent = "";
+        return ul;
+      }
+
+      function scrollToVal(el, min, val, smooth = true) {
+        const top = rowH * PAD + (val - min) * rowH;
+        el.scrollTo({ top, behavior: smooth ? "smooth" : "auto" });
+      }
+      function nearestVal(el, min, max) {
+        const idx = Math.round((el.scrollTop - rowH * PAD) / rowH);
+        return Math.max(min, Math.min(max, min + idx));
+      }
+      function updateBridge(key, val) {
+        const input = bridge[key];
+        if (!input) return;
+        input.value = String(val);
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+      function markActive(el, min, max) {
+        const val = nearestVal(el, min, max);
+        el.querySelectorAll("li").forEach((li) =>
+          li.classList.remove("is-active")
+        );
+        const idx = val - min + PAD; // с учётом буфера
+        const li = el.querySelectorAll("li")[idx];
+        if (li) li.classList.add("is-active");
+      }
+
+      document.querySelectorAll(".wheel").forEach((wheelEl) => {
+        const min = parseInt(wheelEl.dataset.min || "1", 10);
+        const max = parseInt(wheelEl.dataset.max || "10", 10);
+        const value = parseInt(wheelEl.dataset.value || String(min), 10);
+        const key = wheelEl.dataset.key;
+
+        const ul = makeList(min, max);
+        wheelEl.appendChild(ul);
+
+        // стартовая позиция + активная строка
+        scrollToVal(wheelEl, min, value, false);
+        updateBridge(key, value);
+        markActive(wheelEl, min, max);
+
+        let t;
+        wheelEl.addEventListener("scroll", () => {
+          clearTimeout(t);
+          t = setTimeout(() => {
+            const val = nearestVal(wheelEl, min, max);
+            scrollToVal(wheelEl, min, val);
+            updateBridge(key, val);
+            markActive(wheelEl, min, max);
+          }, 80);
+        });
+
+        wheelEl.addEventListener("click", (e) => {
+          const li = e.target.closest("li[data-val]");
+          if (!li) return;
+          const val = parseInt(li.dataset.val, 10);
+          scrollToVal(wheelEl, min, val);
+          updateBridge(key, val);
+          markActive(wheelEl, min, max);
+        });
+
+        // чтобы колесо мыши не прокручивало всю страницу на десктопе
+        wheelEl.addEventListener(
+          "wheel",
+          (e) => {
+            e.stopPropagation();
+          },
+          { passive: true }
+        );
+      });
+    </script>
   </body>
 </html>
