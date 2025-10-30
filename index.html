@@ -8,7 +8,7 @@
     />
     <title>Pomodoro — Emoji</title>
 
-    <!-- стили приложения -->
+    <!-- стили -->
     <link rel="stylesheet" href="./src/css/tokens.css" />
     <link rel="stylesheet" href="./src/css/base.css" />
     <link rel="stylesheet" href="./src/css/layout.css" />
@@ -74,22 +74,131 @@
       <footer class="credit" aria-hidden="true"></footer>
     </main>
 
-    <!-- минимальное меню -->
+    <!-- меню -->
     <div id="sidebarBackdrop" class="sb-backdrop" aria-hidden="true"></div>
     <aside id="sidebar" class="sb" aria-label="Настройки" aria-hidden="true">
       <div class="sb__inner">
+        <!-- Оглавление раздела -->
         <header class="sb__brand">
           <div class="logo">🍅</div>
           <div class="title">
-            <strong>Pomodoro</strong>
-            <span>Focus timer</span>
+            <strong>План занятий</strong>
+            <span>настрой или выбери</span>
           </div>
         </header>
+
+        <hr class="sb__divider" />
+
+        <!-- Переключатель вкладок -->
+        <div class="seg" role="tablist" aria-label="План занятий">
+          <button
+            class="seg__btn is-active"
+            data-mode="build"
+            role="tab"
+            aria-selected="true"
+          >
+            Настроить
+          </button>
+          <button
+            class="seg__btn"
+            data-mode="pick"
+            role="tab"
+            aria-selected="false"
+          >
+            Выбрать
+          </button>
+        </div>
+
+        <!-- ВКЛАДКА: НАСТРОИТЬ -->
+        <section class="pane is-open" data-pane="build">
+          <div class="grid2">
+            <label class="pill in">
+              <span>Фокус, мин</span>
+              <input
+                id="bFocus"
+                type="number"
+                min="1"
+                max="180"
+                step="1"
+                value="25"
+              />
+            </label>
+            <label class="pill in">
+              <span>Перерыв, мин</span>
+              <input
+                id="bBreak"
+                type="number"
+                min="1"
+                max="60"
+                step="1"
+                value="5"
+              />
+            </label>
+          </div>
+
+          <label class="pill in">
+            <span>Циклы</span>
+            <input
+              id="bCycles"
+              type="number"
+              min="1"
+              max="20"
+              step="1"
+              value="4"
+            />
+          </label>
+
+          <div class="plan__meta" id="bMeta">25/5 ×4 ≈ 120 мин</div>
+
+          <div class="row-between">
+            <button id="bApply" class="btn">▶ Применить</button>
+            <button id="bSaveToggle" class="btn ghost">
+              💾 Сохранить план
+            </button>
+          </div>
+
+          <!-- Появляется только после "Сохранить план" -->
+          <div id="bSaveBlock" class="save-row hidden">
+            <label class="pill in">
+              <span>Название плана</span>
+              <input
+                id="bName"
+                type="text"
+                placeholder="Например: Утро 2×25/5"
+              />
+            </label>
+            <div class="row-between">
+              <span class="plan__hint">Будет добавлен в «Мои планы»</span>
+              <button id="bSave" class="btn">Сохранить</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ВКЛАДКА: ВЫБРАТЬ -->
+        <section class="pane" data-pane="pick">
+          <!-- Категория: Мои планы -->
+          <button class="acc" data-acc="mine" aria-expanded="true">
+            <span>Мои планы</span><i class="chev">▾</i>
+          </button>
+          <div class="acc__panel is-open" id="accMine">
+            <div id="listMine" class="list scroll"></div>
+          </div>
+
+          <!-- разделитель -->
+          <hr class="sb__hair" />
+
+          <!-- Категория: Готовые пресеты -->
+          <button class="acc" data-acc="presets" aria-expanded="true">
+            <span>Готовые пресеты</span><i class="chev">▾</i>
+          </button>
+          <div class="acc__panel is-open" id="accPresets">
+            <div id="listPresets" class="list scroll"></div>
+          </div>
+        </section>
 
         <div class="sb__spacer"></div>
 
         <div class="sb__footer">
-          <!-- переключатель темы удалён -->
           <button id="sbClose" class="sb__logout">
             ✕ <span>Закрыть</span>
           </button>
@@ -101,12 +210,12 @@
     <audio
       id="sfxStart"
       preload="auto"
-      src="data:audio/mp3;base64,//uQZAAAAAAAAAAAAAAAAAAAAAAAWGlin...AAAA"
+      src="data:audio/mp3;base64,//uQZ..."
     ></audio>
     <audio
       id="sfxEnd"
       preload="auto"
-      src="data:audio/mp3;base64,//uQZAAAAAAAAAAAAAAAAAAAAAAAWGlin...AAAA"
+      src="data:audio/mp3;base64,//uQZ..."
     ></audio>
 
     <!-- логика -->
