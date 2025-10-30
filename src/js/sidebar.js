@@ -300,6 +300,7 @@ listPlans?.addEventListener("click", (e) => {
 
   if (act === "run") {
     applyPlan(plan);
+    closeSB();
   } else if (act === "del") {
     plans.splice(idx, 1);
     lsSet(KEY_PLANS, plans);
