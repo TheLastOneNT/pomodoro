@@ -14,22 +14,21 @@ export function initHotkeys() {
       return;
 
     switch (e.key.toLowerCase()) {
-      case " ": // space — старт/пауза
+      case " ":
         e.preventDefault();
         if (state.running) timer.pause();
         else timer.start();
         break;
-      case "enter": // тоже старт/пауза
+      case "enter":
         if (state.running) timer.pause();
         else timer.start();
         break;
-      case "s": // skip
+      case "s":
         timer.skip();
         break;
-      case "r": // reset
+      case "r":
         timer.reset();
         break;
-      // case "t": — тема у тебя уже на кнопке, можно при желании дергать клик
       default:
         break;
     }

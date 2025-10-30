@@ -2,13 +2,13 @@ import { state } from "./state.js";
 
 const $ = (s) => document.querySelector(s);
 
-// Делаем ссылки "ленивыми"
+// Ленивые ссылки на DOM (модуль может загрузиться до разметки)
 let timeEl = null;
 let phaseEl = null;
 let tomato = null;
 let progressArc = null;
 
-// Окружность прогресса
+// Окружность для прогресса
 let C = 0;
 function ensureArcInitialized() {
   if (!progressArc) {
@@ -33,12 +33,17 @@ export function fmt(s) {
 }
 
 function statusText() {
-  if (!state.running) {
-    if (state.phase === "focus") return "Пауза · Фокус 🎯";
-    if (state.phase === "break") return "Пауза · Перерыв ☕️";
-    return "Готовы начать 😌";
+  if (state.phase === "idle") return "Готовы начать 😌";
+
+  if (state.phase === "focus") {
+    return state.running ? "Фокус 🎯" : "Пауза ⏸️";
   }
-  return state.phase === "focus" ? "Фокусируемся 🎯" : "Перерыв ☕️";
+
+  if (state.phase === "break") {
+    return state.running ? "Перерыв ☕️" : "Пауза ⏸️";
+  }
+
+  return "";
 }
 
 function setModeClass() {
@@ -52,7 +57,7 @@ function setModeClass() {
 }
 
 export function sync() {
-  // Ленивое получение ссылок на DOM — если модуль загрузился до разметки
+  // Обновим ленивые ссылки, если их ещё нет
   if (!timeEl) timeEl = $("#time");
   if (!phaseEl) phaseEl = $("#phase");
   if (!tomato) tomato = $("#tomatoBtn");
@@ -85,6 +90,7 @@ let __toast = null;
 export function showToast(msg, ms = 2400) {
   if (!__toast) {
     __toast = document.createElement("div");
+    __toast.className = "_toast";
     Object.assign(__toast.style, {
       position: "fixed",
       left: "50%",

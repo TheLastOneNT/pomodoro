@@ -42,8 +42,8 @@ function applyThemeClass() {
 
 /**
  * Иконка отражает ТЕКУЩУЮ тему:
- *  - night  -> 🌙
- *  - day    -> 🌞
+ *  - night -> 🌙
+ *  - day   -> 🌞
  * Tooltip/aria-label описывает СЛЕДУЮЩЕЕ действие (что будет при клике).
  */
 function renderThemeButton() {
@@ -142,7 +142,6 @@ on(preset, "change", () => {
     persist();
   }
 });
-
 on(applyCustom, "click", () => {
   const f = Math.max(1, toInt(focusMin?.value, 25));
   const b = Math.max(1, toInt(breakMin?.value, 5));
@@ -151,20 +150,17 @@ on(applyCustom, "click", () => {
   sync();
   persist();
 });
-
 on(autoToggle, "change", () => {
   if (typeof timer.setAuto === "function") timer.setAuto(!!autoToggle.checked);
   state.auto = !!autoToggle.checked;
   sync();
   persist();
 });
-
 on(soundToggle, "change", () => {
   state.sound = !!soundToggle.checked;
   sync();
   persist();
 });
-
 on(resetBtn, "click", () => {
   timer.reset();
   sync();

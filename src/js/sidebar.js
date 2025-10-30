@@ -1,5 +1,6 @@
-// Меню «План занятий»: Настроить / Выбрать, общий список планов.
-// Тема управляется в app.js.
+// sidebar.js — меню «План занятий»: Настроить / Выбрать, общий список планов.
+// Тема управляется в app.js. Добавлены: фокус-ловушка, возврат фокуса, ESC только при открытом сайдбаре.
+
 import * as timer from "./timer.js";
 import { sync } from "./ui.js";
 import {
@@ -21,21 +22,95 @@ const openBtn = $("#openSettings");
 const closeBtn = $("#sbClose");
 const sidebar = $("#sidebar");
 const backdrop = $("#sidebarBackdrop");
+
+// фокус-ловушка + возврат фокуса
+let lastActiveEl = null;
+let trapHandlersBound = false;
+
+function getFocusables(root) {
+  if (!root) return [];
+  return Array.from(
+    root.querySelectorAll(
+      'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    )
+  ).filter(
+    (el) => !el.hasAttribute("disabled") && !el.getAttribute("aria-hidden")
+  );
+}
+
+function trapFocus(panel) {
+  if (!panel || trapHandlersBound) return;
+  trapHandlersBound = true;
+
+  const els = () => getFocusables(panel);
+  const onKeydown = (e) => {
+    if (e.key !== "Tab") return;
+    const list = els();
+    if (!list.length) return;
+
+    const first = list[0];
+    const last = list[list.length - 1];
+    const active = document.activeElement;
+
+    if (e.shiftKey) {
+      if (active === first || !panel.contains(active)) {
+        e.preventDefault();
+        last.focus();
+      }
+    } else {
+      if (active === last || !panel.contains(active)) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  };
+
+  // фокус на первый элемент панели
+  const first = els()[0];
+  if (first) first.focus();
+
+  panel.addEventListener("keydown", onKeydown);
+  panel._trapOff = () => panel.removeEventListener("keydown", onKeydown);
+}
+
+function releaseTrap() {
+  if (!trapHandlersBound) return;
+  trapHandlersBound = false;
+  if (sidebar && sidebar._trapOff) {
+    sidebar._trapOff();
+    delete sidebar._trapOff;
+  }
+}
+
 function openSB() {
+  lastActiveEl = document.activeElement;
   sidebar?.classList.add("show");
   backdrop?.classList.add("show");
   sidebar?.setAttribute("aria-hidden", "false");
+  trapFocus(sidebar);
 }
+
 function closeSB() {
   sidebar?.classList.remove("show");
   backdrop?.classList.remove("show");
   sidebar?.setAttribute("aria-hidden", "true");
+  releaseTrap();
+
+  // вернуть фокус туда, откуда открыли
+  if (lastActiveEl && typeof lastActiveEl.focus === "function") {
+    lastActiveEl.focus();
+  } else {
+    openBtn?.focus();
+  }
 }
+
 openBtn?.addEventListener("click", openSB);
 closeBtn?.addEventListener("click", closeSB);
 backdrop?.addEventListener("click", closeSB);
-window.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") closeSB();
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && sidebar?.classList.contains("show")) {
+    closeSB();
+  }
 });
 
 // ---------- tabs ----------
@@ -141,6 +216,7 @@ const listPlans = $("#listPlans");
 function planRow(p) {
   const div = document.createElement("div");
   div.className = "item";
+  div._plan = p;
   div.innerHTML = `
     <div class="text">
       <span class="name">${p.name}</span>
@@ -192,9 +268,6 @@ listPlans?.addEventListener("click", async (e) => {
   if (!id || !act) return;
 
   if (act === "run") {
-    const items = Array.from(listPlans.children)
-      .map((n) => n._plan)
-      .filter(Boolean);
     const plans = await fetchPlans();
     const plan = plans.find((x) => String(x.id) === String(id));
     if (!plan) return;
@@ -224,3 +297,6 @@ listPlans?.addEventListener("click", async (e) => {
     editId = plan.id;
   }
 });
+
+// (опционально, если где-то в проекте требуется программный вызов)
+export { openSB, closeSB };

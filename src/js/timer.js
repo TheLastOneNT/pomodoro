@@ -1,7 +1,7 @@
 import { state } from "./state.js";
 
 let endAt = null; // дедлайн в мс
-let acc = 0; // учёт минут фокуса (как было)
+let acc = 0; // учёт минут фокуса
 
 function nowMs() {
   return Date.now();
@@ -24,7 +24,6 @@ export function start() {
 }
 
 export function pause() {
-  // зафиксируем остаток по дедлайну и уберём дедлайн
   if (endAt) {
     const leftMs = Math.max(0, endAt - nowMs());
     state.remaining = Math.round(leftMs / 1000);
@@ -41,7 +40,7 @@ export function reset() {
   endAt = null;
 }
 
-/** Установка пресета в минутах */
+/** Установка пресета (минуты) */
 export function setPreset(focusMin, breakMin) {
   state.durations.focusSec = Math.max(60, (focusMin | 0) * 60);
   state.durations.breakSec = Math.max(60, (breakMin | 0) * 60);
@@ -50,7 +49,6 @@ export function setPreset(focusMin, breakMin) {
     state.remaining = state.durations.focusSec;
     endAt = null;
   } else if (state.running && endAt) {
-    // переинициализируем текущий интервал с новой длительностью текущей фазы
     const secs =
       state.phase === "focus"
         ? state.durations.focusSec
@@ -59,12 +57,10 @@ export function setPreset(focusMin, breakMin) {
   }
 }
 
-/** Автопродолжение */
 export function setAuto(v) {
   state.auto = !!v;
 }
 
-/** Целевая длина плана в циклах */
 export function setCycles(n) {
   const v = (n | 0) > 0 ? n | 0 : null;
   state.cyclesTarget = v;
@@ -78,25 +74,22 @@ export function setTheme(mode) {
   state.theme = mode;
 }
 
-/** Пропуск текущей фазы (немедленный переход) */
+/** Пропуск текущей фазы */
 export function skip() {
   if (state.phase === "idle") return;
-  // доводим до нуля и завершаем фазу
   state.remaining = 0;
-  phaseEnd(/* skipped */ true);
+  phaseEnd(true);
 }
 
 // ---------------- internal ----------------
 function tick() {
   if (!state.running) return;
 
-  // рассчитываем остаток от дедлайна
   if (endAt) {
     const leftMs = Math.max(0, endAt - nowMs());
     state.remaining = Math.round(leftMs / 1000);
   }
 
-  // учёт минут фокуса
   if (state.phase === "focus") {
     acc += 1;
     if (acc >= 60) {
@@ -136,15 +129,15 @@ function phaseEnd(skipped = false) {
     }
   }
 
-  // уведомим UI/аппы о смене фазы
+  // событие смены фазы — для UI/уведомлений/звуков
   document.dispatchEvent(
     new CustomEvent("timer:phase", {
       detail: { from: was, to: next, skipped },
     })
   );
 
-  // автопродолжение/пауза
+  // если авто-режим выключен — ставим на паузу на границе фаз
   if (!state.auto) {
-    pause(); // зафиксирует remaining и сбросит endAt
+    pause();
   }
 }

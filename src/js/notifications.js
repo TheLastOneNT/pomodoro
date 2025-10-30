@@ -2,7 +2,6 @@ let blinkTimer = null;
 let originalTitle = document.title;
 
 export function initNotifications() {
-  // можно запросить разрешение заранее, но делаем лениво при первом показе
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) stopTitleBlink();
   });
@@ -13,7 +12,7 @@ export async function notifyPhase(toPhase) {
   const title = toPhase === "focus" ? "Фокус" : "Перерыв";
   const body = toPhase === "focus" ? "Пора работать" : "Пора отдохнуть";
 
-  // Пытаемся показать нативное уведомление
+  // Попробуем нативные нотификации
   try {
     if ("Notification" in window) {
       if (Notification.permission === "granted") {
@@ -29,17 +28,17 @@ export async function notifyPhase(toPhase) {
     }
   } catch (_) {}
 
-  // Фолбэк: мигаем заголовком вкладки
+  // Фолбэк — мигание <title>
   startTitleBlink(`${title} — ${body}`);
 }
 
 function startTitleBlink(msg) {
   stopTitleBlink();
-  let toggle = false;
   originalTitle = document.title;
+  let on = false;
   blinkTimer = setInterval(() => {
-    document.title = toggle ? msg : originalTitle;
-    toggle = !toggle;
+    document.title = on ? msg : originalTitle;
+    on = !on;
   }, 900);
 }
 

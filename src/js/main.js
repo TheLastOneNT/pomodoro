@@ -25,7 +25,7 @@ function boot() {
   initHotkeys();
   initNotifications();
 
-  // ОДИН обработчик смены фазы: уведомление + звук + тост
+  // ЕДИНСТВЕННЫЙ обработчик смены фазы: уведомление + звук + тост
   document.addEventListener("timer:phase", (e) => {
     const { from, to } = e.detail || {};
     notifyPhase(to);
