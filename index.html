@@ -38,7 +38,6 @@
           aria-label="Старт/Пауза"
           aria-pressed="false"
         >
-          <!-- прогресс-дуга -->
           <svg
             class="tomato__progress"
             viewBox="0 0 360 360"
@@ -56,7 +55,7 @@
               style="transform: rotate(-90deg); transform-origin: 180px 180px"
             />
           </svg>
-          <!-- тело -->
+
           <img
             class="tomato__img"
             src="./assets/img/tomato.png"
@@ -75,14 +74,9 @@
       <footer class="credit" aria-hidden="true"></footer>
     </main>
 
-    <!-- Sidebar -->
+    <!-- Минималистичное меню -->
     <div id="sidebarBackdrop" class="sb-backdrop" aria-hidden="true"></div>
-    <aside
-      id="sidebar"
-      class="sb"
-      aria-label="Sidebar настроек"
-      aria-hidden="true"
-    >
+    <aside id="sidebar" class="sb" aria-label="Настройки" aria-hidden="true">
       <div class="sb__inner">
         <header class="sb__brand">
           <div class="logo">🍅</div>
@@ -90,31 +84,7 @@
             <strong>Pomodoro</strong>
             <span>Focus timer</span>
           </div>
-          <button
-            id="sbCollapse"
-            class="sb__collapse"
-            aria-label="Свернуть/развернуть"
-          >
-            ›
-          </button>
         </header>
-
-        <div class="sb__search">
-          <button class="icon">🔎</button>
-          <input type="text" placeholder="Поиск…" disabled />
-        </div>
-
-        <nav class="sb__nav">
-          <button class="sb__item is-active" data-section="plan">
-            <i>🗓️</i><span>План</span>
-          </button>
-          <button class="sb__item" data-section="options">
-            <i>⚙️</i><span>Опции</span>
-          </button>
-          <button class="sb__item" data-section="history">
-            <i>📈</i><span>История</span>
-          </button>
-        </nav>
 
         <div class="sb__spacer"></div>
 
@@ -134,7 +104,7 @@
       </div>
     </aside>
 
-    <!-- звуки (data-URI, чтобы не ловить 404) -->
+    <!-- звуки -->
     <audio
       id="sfxStart"
       preload="auto"
@@ -146,7 +116,7 @@
       src="data:audio/mp3;base64,//uQZAAAAAAAAAAAAAAAAAAAAAAAWGlin...AAAA"
     ></audio>
 
-    <!-- логика: ВАЖНО — sidebar первым, затем app -->
+    <!-- логика -->
     <script type="module" src="./src/js/sidebar.js"></script>
     <script type="module" src="./src/js/app.js"></script>
   </body>

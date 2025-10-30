@@ -1,7 +1,5 @@
-/* ===== Токены */
 :root {
   --sb-w: 280px;
-  --sb-w-collapsed: 88px;
   --r: 16px;
 
   /* Ночь по умолчанию */
@@ -10,7 +8,7 @@
   --sb-line: rgba(255, 255, 255, 0.08);
   --ink: #e9edf3;
   --muted: #b7c0cc;
-  --accent: #7ef9c0; /* мятный, как в приложении */
+  --accent: #7ef9c0;
 }
 body.day {
   --sb-bg: #f6f8fb;
@@ -18,10 +16,10 @@ body.day {
   --sb-line: rgba(0, 0, 0, 0.08);
   --ink: #0f1114;
   --muted: #6b7380;
-  --accent: #6c7cff; /* фиолетовый, как в примере */
+  --accent: #6c7cff;
 }
 
-/* ===== Бекдроп и контейнер */
+/* Бекдроп и контейнер */
 .sb-backdrop {
   position: fixed;
   inset: 0;
@@ -53,9 +51,6 @@ body.day {
 .sb.show {
   transform: none;
 }
-.sb.collapsed {
-  width: var(--sb-w-collapsed);
-}
 
 .sb__inner {
   height: 100%;
@@ -65,7 +60,7 @@ body.day {
   padding: 14px;
 }
 
-/* ===== Brand */
+/* Brand */
 .sb__brand {
   display: flex;
   align-items: center;
@@ -92,90 +87,12 @@ body.day {
   color: var(--muted);
   font-size: 12px;
 }
-.sb__collapse {
-  margin-left: auto;
-  border: 1px solid var(--sb-line);
-  background: var(--sb-card);
-  color: inherit;
-  border-radius: 12px;
-  width: 32px;
-  height: 32px;
-  display: grid;
-  place-items: center;
-  transform: rotate(0deg);
-  transition: transform 0.2s;
-}
-.sb.collapsed .sb__collapse {
-  transform: rotate(180deg);
-}
 
-/* ===== Search (декор, disabled) */
-.sb__search {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--sb-card);
-  border: 1px solid var(--sb-line);
-  border-radius: 12px;
-  padding: 10px;
-}
-.sb__search .icon {
-  border: 0;
-  background: transparent;
-  color: var(--muted);
-}
-.sb__search input {
-  border: 0;
-  background: transparent;
-  color: var(--muted);
-  width: 100%;
-}
-
-/* ===== Nav */
-.sb__nav {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.sb__item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--muted);
-  font-weight: 700;
-}
-.sb__item i {
-  width: 28px;
-  text-align: center;
-  font-style: normal;
-}
-.sb__item.is-active {
-  color: var(--ink);
-  background: var(--sb-card);
-  border-color: var(--sb-line);
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.02);
-}
-.sb__item:hover {
-  background: var(--sb-card);
-  color: var(--ink);
-}
-
-.sb.collapsed .sb__item span,
-.sb.collapsed .sb__brand .title,
-.sb.collapsed .sb__search input,
-.sb.collapsed .sb__footer .label,
-.sb.collapsed .sb__logout span {
-  display: none;
-}
-
-/* ===== Footer */
 .sb__spacer {
   flex: 1;
 }
+
+/* Footer */
 .sb__footer {
   border-top: 1px solid var(--sb-line);
   padding-top: 12px;
@@ -207,7 +124,7 @@ body.day {
   padding: 10px;
 }
 
-/* ===== Switch control */
+/* Переключатель */
 .switch {
   position: relative;
   width: 48px;
@@ -247,7 +164,7 @@ body.day {
   transform: translateX(18px);
 }
 
-/* ===== Responsive: на мобилке sidebar поверх контента */
+/* Мобилка: поверх контента */
 @media (max-width: 640px) {
   .sb {
     width: min(88vw, 360px);
