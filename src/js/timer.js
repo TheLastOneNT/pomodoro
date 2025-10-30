@@ -1,5 +1,18 @@
 import { state } from "./state.js";
 
+let endAt = null; // <-- новый дедлайн в мс
+let acc = 0; // учёт минут фокуса (как было)
+
+function nowMs() {
+  return Date.now();
+}
+function sec(n) {
+  return Math.max(1, n | 0) * 1000;
+}
+function setEndFromSeconds(seconds) {
+  endAt = nowMs() + seconds * 1000;
+}
+
 export function start() {
   if (state.running) return;
 
@@ -8,11 +21,18 @@ export function start() {
     state.remaining = state.durations.focusSec;
   }
 
+  if (!endAt) setEndFromSeconds(state.remaining);
   state.running = true;
   if (!state.intervalId) state.intervalId = setInterval(tick, 1000);
 }
 
 export function pause() {
+  // фиксируем остаток по дедлайну и убираем дедлайн
+  if (endAt) {
+    const leftMs = Math.max(0, endAt - nowMs());
+    state.remaining = Math.round(leftMs / 1000);
+  }
+  endAt = null;
   state.running = false;
 }
 
@@ -21,21 +41,29 @@ export function reset() {
   state.phase = "idle";
   state.remaining = state.durations.focusSec;
   state.cyclesDone = 0;
+  endAt = null;
 }
 
-/** Установка пресета в минутах */
 export function setPreset(focusMin, breakMin) {
   state.durations.focusSec = Math.max(60, (focusMin | 0) * 60);
   state.durations.breakSec = Math.max(60, (breakMin | 0) * 60);
-  if (state.phase === "idle") state.remaining = state.durations.focusSec;
+  if (state.phase === "idle") {
+    state.remaining = state.durations.focusSec;
+    endAt = null;
+  } else if (state.running && endAt) {
+    // переинициализируем текущий интервал с новой длительностью текущей фазы
+    const secs =
+      state.phase === "focus"
+        ? state.durations.focusSec
+        : state.durations.breakSec;
+    setEndFromSeconds(secs);
+  }
 }
 
-/** Автопродолжение (для совместимости с app.js и сайдбаром) */
 export function setAuto(v) {
   state.auto = !!v;
 }
 
-/** Целевая длина плана в циклах (опционально) */
 export function setCycles(n) {
   const v = (n | 0) > 0 ? n | 0 : null;
   state.cyclesTarget = v;
@@ -45,23 +73,23 @@ export function setCycles(n) {
 export function toggleAuto() {
   state.auto = !state.auto;
 }
-
 export function setTheme(mode) {
   state.theme = mode;
 }
 
-// ---------------- internal ----------------
-
-let acc = 0; // для учёта минут фокуса в статистике
-
+// ---- internal ----
 function tick() {
   if (!state.running) return;
 
-  state.remaining -= 1;
+  // рассчитываем остаток от дедлайна
+  if (endAt) {
+    const leftMs = Math.max(0, endAt - nowMs());
+    state.remaining = Math.round(leftMs / 1000);
+  }
 
-  // учёт минут фокуса (не навязываю UI: просто диспатчим событие раз в минуту)
+  // учёт минут фокуса
   if (state.phase === "focus") {
-    acc++;
+    acc += 1;
     if (acc >= 60) {
       acc = 0;
       document.dispatchEvent(new CustomEvent("focus:minute", { detail: 1 }));
@@ -74,22 +102,21 @@ function tick() {
 }
 
 function phaseEnd() {
-  // завершение фокуса = завершён 1 цикл
   const justFinishedFocus = state.phase === "focus";
 
   const next = state.phase === "focus" ? "break" : "focus";
   state.phase = next;
   state.remaining =
     next === "focus" ? state.durations.focusSec : state.durations.breakSec;
+  setEndFromSeconds(state.remaining);
 
   if (justFinishedFocus) {
     state.cyclesDone += 1;
-
-    // если есть целевое число циклов — стопаем после его достижения
     if (state.cyclesTarget && state.cyclesDone >= state.cyclesTarget) {
       state.running = false;
       state.phase = "idle";
       state.remaining = state.durations.focusSec;
+      endAt = null;
       document.dispatchEvent(
         new CustomEvent("plan:done", {
           detail: { cyclesDone: state.cyclesDone },
@@ -100,5 +127,7 @@ function phaseEnd() {
   }
 
   // автопродолжение/пауза
-  state.running = !!state.auto;
+  if (!state.auto) {
+    pause(); // это зафиксирует remaining и сбросит endAt
+  }
 }
