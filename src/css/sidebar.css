@@ -99,18 +99,6 @@ body.day {
   display: grid;
   gap: 10px;
 }
-.sb__switch {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px;
-  background: var(--sb-card);
-  border: 1px solid var(--sb-line);
-  border-radius: 12px;
-}
-.sb__switch .label {
-  font-weight: 800;
-}
 .sb__logout {
   width: 100%;
   display: flex;
@@ -122,46 +110,6 @@ body.day {
   color: inherit;
   border-radius: 12px;
   padding: 10px;
-}
-
-/* Переключатель */
-.switch {
-  position: relative;
-  width: 48px;
-  height: 28px;
-  margin-left: auto;
-}
-.switch input {
-  display: none;
-}
-.switch i {
-  position: absolute;
-  inset: 0;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-}
-.switch i::after {
-  content: "";
-  position: absolute;
-  left: 2px;
-  top: 2px;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: #fff;
-  transition: transform 0.18s;
-}
-.switch input:checked + i {
-  background: linear-gradient(
-    180deg,
-    var(--accent),
-    color-mix(in oklab, var(--accent), #1d1 35%)
-  );
-  border-color: color-mix(in oklab, var(--accent), #000 45%);
-}
-.switch input:checked + i::after {
-  transform: translateX(18px);
 }
 
 /* Мобилка: поверх контента */
