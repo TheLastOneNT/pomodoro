@@ -28,6 +28,8 @@ Thumbs.db
 src/js/config.js
 src/js/config.mjs
 src/js/supaKeys.js
+.env
+.env.*
 
 # === editor ===
 .vscode/

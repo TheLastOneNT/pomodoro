@@ -1,22 +1,10 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
   <head>
     <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover"
-    />
-    <title>Pomodoro — Emoji</title>
-
-    <!-- Стили проекта -->
-    <link rel="stylesheet" href="./src/css/tokens.css" />
-    <link rel="stylesheet" href="./src/css/base.css" />
-    <link rel="stylesheet" href="./src/css/layout.css" />
-    <link rel="stylesheet" href="./src/css/app.css" />
-    <link rel="stylesheet" href="./src/css/tomato.css" />
-    <link rel="stylesheet" href="./src/css/sidebar.css" />
-    <link rel="stylesheet" href="./src/css/plans.css" />
-    <link rel="stylesheet" href="./src/css/auth.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Pomodoro</title>
+    <link rel="stylesheet" href="/src/css/main.css" />
   </head>
 
   <body class="night">
@@ -26,27 +14,14 @@
         <div class="actions">
           <button id="openAuth" class="icon-btn" aria-label="Войти">🔐</button>
           <div id="authStatus" class="auth-status"></div>
-          <button id="themeToggle" class="icon-btn" aria-label="Тема">
-            🌙
-          </button>
-          <button id="openSettings" class="icon-btn" aria-label="Меню">
-            ☰
-          </button>
+          <button id="themeToggle" class="icon-btn" aria-label="Тема">🌙</button>
+          <button id="openSettings" class="icon-btn" aria-label="Меню">☰</button>
         </div>
       </header>
 
       <section class="stage" aria-live="polite">
-        <button
-          class="tomato"
-          id="tomatoBtn"
-          aria-label="Старт/Пауза"
-          aria-pressed="false"
-        >
-          <svg
-            class="tomato__progress"
-            viewBox="0 0 360 360"
-            aria-hidden="true"
-          >
+        <button class="tomato" id="tomatoBtn" aria-label="Старт/Пауза" aria-pressed="false">
+          <svg class="tomato__progress" viewBox="0 0 360 360" aria-hidden="true">
             <circle
               id="progressArc"
               cx="180"
@@ -59,18 +34,12 @@
               style="transform: rotate(-90deg); transform-origin: 180px 180px"
             />
           </svg>
-          <img
-            class="tomato__img"
-            src="./assets/img/tomato.png"
-            alt="Помидор"
-            draggable="false"
-          />
+          <img class="tomato__img" src="./assets/img/tomato.png" alt="Помидор" draggable="false" />
           <div class="tomato__shadow" aria-hidden="true"></div>
         </button>
 
         <div class="readout">
           <div id="time" class="time">25:00</div>
-          <div id="time" aria-live="polite" aria-atomic="true">25:00</div>
           <div id="phase" class="phase">Отдыхаем 😌</div>
         </div>
       </section>
@@ -84,28 +53,16 @@
       <div class="sb__inner">
         <header class="sb__brand">
           <div class="logo">🍅</div>
-          <div class="title">
-            <strong>План занятий</strong><span>настрой или выбери</span>
-          </div>
+          <div class="title"><strong>План занятий</strong><span>настрой или выбери</span></div>
         </header>
 
         <hr class="sb__divider" />
 
         <div class="seg" role="tablist" aria-label="План занятий">
-          <button
-            class="seg__btn is-active"
-            data-mode="build"
-            role="tab"
-            aria-selected="true"
-          >
+          <button class="seg__btn is-active" data-mode="build" role="tab" aria-selected="true">
             Настроить
           </button>
-          <button
-            class="seg__btn"
-            data-mode="pick"
-            role="tab"
-            aria-selected="false"
-          >
+          <button class="seg__btn" data-mode="pick" role="tab" aria-selected="false">
             Выбрать
           </button>
         </div>
@@ -156,63 +113,36 @@
             <div class="grid2">
               <label class="pill in"
                 ><span>Фокус, мин</span
-                ><input
-                  id="bFocus"
-                  type="number"
-                  min="1"
-                  max="180"
-                  step="1"
-                  value="25"
+                ><input id="bFocus" type="number" min="1" max="180" step="1" value="25"
               /></label>
               <label class="pill in"
                 ><span>Перерыв, мин</span
-                ><input
-                  id="bBreak"
-                  type="number"
-                  min="1"
-                  max="60"
-                  step="1"
-                  value="5"
+                ><input id="bBreak" type="number" min="1" max="60" step="1" value="5"
               /></label>
             </div>
             <label class="pill in"
               ><span>Циклы</span
-              ><input
-                id="bCycles"
-                type="number"
-                min="1"
-                max="20"
-                step="1"
-                value="4"
+              ><input id="bCycles" type="number" min="1" max="20" step="1" value="4"
             /></label>
           </div>
 
           <div class="plan__meta" id="bMeta">25/5 ×4 ≈ 120 мин</div>
-          <div id="bEditTag" class="edit-tag hidden">
-            Редактирование: <b id="bEditName"></b>
-          </div>
+          <div id="bEditTag" class="edit-tag hidden">Редактирование: <b id="bEditName"></b></div>
 
           <div class="row-between">
             <button id="bApply" class="btn">▶ Применить</button>
-            <button id="bSaveToggle" class="btn ghost">
-              💾 Сохранить план
-            </button>
+            <button id="bSaveToggle" class="btn ghost">💾 Сохранить план</button>
           </div>
 
           <div id="bSaveBlock" class="save-row hidden">
             <label class="pill in"
               ><span>Название плана</span
-              ><input
-                id="bName"
-                type="text"
-                placeholder="Например: Утро 2×25/5"
+              ><input id="bName" type="text" placeholder="Например: Утро 2×25/5"
             /></label>
             <div class="row-between">
               <span class="plan__hint">Сохранится в «Планы»</span>
               <div class="row-between" style="gap: 8px">
-                <button id="bCancelEdit" class="btn ghost hidden">
-                  Отмена
-                </button>
+                <button id="bCancelEdit" class="btn ghost hidden">Отмена</button>
                 <button id="bSave" class="btn">Сохранить</button>
               </div>
             </div>
@@ -226,36 +156,17 @@
 
         <div class="sb__spacer"></div>
         <div class="sb__footer">
-          <button id="sbClose" class="sb__logout">
-            ✕ <span>Закрыть</span>
-          </button>
+          <button id="sbClose" class="sb__logout">✕ <span>Закрыть</span></button>
         </div>
       </div>
     </aside>
 
-    <!-- Звуки -->
-    <audio id="sfxStart" preload="auto">
-      <source src="./sfx/start.mp3" type="audio/mpeg" />
-      <source src="./sfx/start.ogg" type="audio/ogg" />
-    </audio>
-    <audio id="sfxEnd" preload="auto">
-      <source src="./sfx/end.mp3" type="audio/mpeg" />
-      <source src="./sfx/end.ogg" type="audio/ogg" />
-    </audio>
-
     <!-- AUTH MODAL -->
     <div id="authModal" class="auth-modal" aria-hidden="true">
-      <div
-        class="auth-dialog"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="authTitle"
-      >
+      <div class="auth-dialog" role="dialog" aria-modal="true" aria-labelledby="authTitle">
         <header class="auth-head">
           <strong id="authTitle">Вход / Регистрация</strong>
-          <button id="authClose" class="icon-btn" aria-label="Закрыть">
-            ✕
-          </button>
+          <button id="authClose" class="icon-btn" aria-label="Закрыть">✕</button>
         </header>
 
         <button
@@ -268,15 +179,10 @@
           <span>Продолжить с Google</span>
         </button>
 
-        <div class="or-row" aria-hidden="true">
-          <span></span><em>или</em><span></span>
-        </div>
+        <div class="or-row" aria-hidden="true"><span></span><em>или</em><span></span></div>
 
         <form id="authForm" class="auth-form" autocomplete="on">
-          <label
-            >Email
-            <input id="authEmail" type="email" autocomplete="email" required
-          /></label>
+          <label>Email <input id="authEmail" type="email" autocomplete="email" required /></label>
           <label
             >Пароль
             <input
