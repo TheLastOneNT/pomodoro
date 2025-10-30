@@ -233,16 +233,14 @@
     </aside>
 
     <!-- Звуки -->
-    <audio
-      id="sfxStart"
-      preload="auto"
-      src="data:audio/mp3;base64,//uQZ..."
-    ></audio>
-    <audio
-      id="sfxEnd"
-      preload="auto"
-      src="data:audio/mp3;base64,//uQZ..."
-    ></audio>
+    <audio id="sfxStart" preload="auto">
+      <source src="./sfx/start.mp3" type="audio/mpeg" />
+      <source src="./sfx/start.ogg" type="audio/ogg" />
+    </audio>
+    <audio id="sfxEnd" preload="auto">
+      <source src="./sfx/end.mp3" type="audio/mpeg" />
+      <source src="./sfx/end.ogg" type="audio/ogg" />
+    </audio>
 
     <!-- AUTH MODAL -->
     <div id="authModal" class="auth-modal" aria-hidden="true">
