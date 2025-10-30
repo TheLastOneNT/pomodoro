@@ -1,4 +1,4 @@
-// vite.config.js — ESM-совместимый, без __dirname
+// vite.config.js — корректная база для GitHub Pages
 import { defineConfig, loadEnv } from 'vite';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -6,11 +6,11 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// читаем env (например, из .env.production на CI)
+const FALLBACK_BASE = '/pomodoro/';
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  // если деплой на GitHub Pages, укажи base = "/<repo>/"
-  const base = env.GH_PAGES_BASE || '/';
+  const base = env.GH_PAGES_BASE || FALLBACK_BASE;
 
   return {
     base,
@@ -25,9 +25,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     resolve: {
-      alias: {
-        '@': path.resolve(__dirname, 'src'),
-      },
+      alias: { '@': path.resolve(__dirname, 'src') },
     },
   };
 });
