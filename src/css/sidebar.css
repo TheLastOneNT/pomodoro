@@ -269,11 +269,12 @@ body.day {
   padding: 10px;
 }
 
-/* wheels (минимальная копия) */
+/* wheels — iOS-style picker */
 .wheels {
   display: grid;
   gap: 10px;
 }
+
 .wheel-card {
   position: relative;
   display: grid;
@@ -284,33 +285,60 @@ body.day {
   border-radius: 20px;
   padding: 10px;
 }
+
+.wheel-wrap {
+  position: relative;
+}
+
+.wheel-label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  margin: 0 2px 6px;
+}
+
+/* Главное: цилиндр + маски + отсутствие скролл-полосы */
 .wheel {
   position: relative;
-  height: 160px;
+  height: 216px; /* как на iOS: ~6 рядов высоты, выбор по центру */
   overflow: auto;
-  scroll-snap-type: y mandatory;
+  overscroll-behavior: contain;
   border-radius: 14px;
   border: 1px solid var(--sb-line);
   background: transparent;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  perspective: 600px; /* 3D глубина */
 }
 .wheel::-webkit-scrollbar {
-  width: 0;
+  display: none;
 }
+
 .wheel ul {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: grid;
-  gap: 6px;
 }
+
 .wheel li {
-  height: 36px;
+  height: 36px; /* шаг строки */
   display: grid;
   place-items: center;
   font-weight: 900;
-  scroll-snap-align: center;
+  transform-origin: center center -48px; /* радиус цилиндра */
+  backface-visibility: hidden;
+  color: var(--ink);
+  opacity: 0.65; /* периферия тусклее */
+  will-change: transform, opacity, filter;
 }
-.wheel-highlight {
+.wheel li.is-active {
+  opacity: 1;
+  text-shadow: 0 0 0.01px currentColor; /* делает шрифт более crisp */
+}
+
+/* Выделяющая полоска по центру (строка выбора) */
+.wheel-highlight,
+.wheel__selector {
   pointer-events: none;
   position: absolute;
   left: 10px;
@@ -319,12 +347,30 @@ body.day {
   height: 36px;
   transform: translateY(-50%);
   border-radius: 10px;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.06),
-    transparent 60%
-  );
-  box-shadow: inset 0 0 0 1px var(--sb-line);
+  box-shadow:
+    inset 0 0 0 1px var(--sb-line),
+    0 0 0 9999px rgba(0, 0, 0, 0); /* сохраняем слой сверху */
+}
+
+/* Cверху/снизу лёгкие «маски» как в iOS */
+.wheel::before,
+.wheel::after {
+  content: '';
+  position: sticky;
+  left: 0;
+  right: 0;
+  display: block;
+  height: calc((216px - 36px) / 2); /* верх/низ вне центральной строки */
+  z-index: 2;
+  pointer-events: none;
+}
+.wheel::before {
+  top: 0;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0));
+}
+.wheel::after {
+  bottom: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0));
 }
 
 /* mobile */
