@@ -4,7 +4,32 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Pomodoro</title>
+
+    <!-- Стили приложения -->
     <link rel="stylesheet" href="/src/css/main.css" />
+
+    <!-- Локальный фикс для колёс: полоса поверх, старая полоса скрыта -->
+    <style>
+      .wheel ._selector {
+        z-index: 3;
+      }
+      .wheel ul {
+        position: relative;
+        z-index: 1;
+      }
+      .wheel-highlight {
+        display: none !important;
+      }
+    </style>
+
+    <!-- Подмена старого модуля колёс на no-op -->
+    <script type="importmap">
+      {
+        "imports": {
+          "/src/js/wheels.js": "data:application/javascript,export function initWheels(){}"
+        }
+      }
+    </script>
   </head>
 
   <body class="night">
@@ -79,19 +104,11 @@
                   data-min="1"
                   data-max="180"
                   data-value="25"
-                  aria-label="Фокус (мин)"
                 ></div>
               </div>
               <div class="wheel-wrap">
                 <div class="wheel-label">Перерыв</div>
-                <div
-                  class="wheel"
-                  data-key="break"
-                  data-min="1"
-                  data-max="60"
-                  data-value="5"
-                  aria-label="Перерыв (мин)"
-                ></div>
+                <div class="wheel" data-key="break" data-min="1" data-max="60" data-value="5"></div>
               </div>
               <div class="wheel-wrap">
                 <div class="wheel-label">Циклы</div>
@@ -101,10 +118,11 @@
                   data-min="1"
                   data-max="20"
                   data-value="4"
-                  aria-label="Циклы"
                 ></div>
               </div>
-              <div class="wheel-highlight" aria-hidden="true"></div>
+
+              <!-- общий маркер выбора на три колонки -->
+              <div class="wheel-pill" aria-hidden="true"></div>
             </div>
           </div>
 
@@ -191,7 +209,8 @@
               minlength="6"
               autocomplete="current-password"
               required
-          /></label>
+            />
+          </label>
           <div class="row">
             <select id="authMode" aria-label="Режим">
               <option value="login">Войти</option>
@@ -207,7 +226,133 @@
       </div>
     </div>
 
-    <!-- ЕДИНАЯ точка входа (модули импортируются изнутри) -->
+    <!-- Инициализация iOS-подобных колёс + синхронизация -->
+    <script>
+      (() => {
+        const ROW_H = 40; // синхронизирован с CSS
+        const VISIBLE = 5;
+
+        const idByKey = { focus: 'bFocus', break: 'bBreak', cycles: 'bCycles' };
+
+        function pushToBridge(key, value) {
+          const id = idByKey[key];
+          const el = id && document.getElementById(id);
+          if (!el) return;
+          el.value = String(value);
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+        function buildList(min, max) {
+          const ul = document.createElement('ul');
+          for (let v = min; v <= max; v++) {
+            const li = document.createElement('li');
+            li.dataset.val = v;
+            li.textContent = v;
+            ul.appendChild(li);
+          }
+          return ul;
+        }
+
+        // ближайший индекс к центру: +0.5*ROW_H даёт корректную «округлённость»
+        function nearestValue(wheel, min, max) {
+          const idx = Math.round(wheel.scrollTop / ROW_H);
+          let val = min + idx;
+          if (val < min) val = min;
+          if (val > max) val = max;
+          return val;
+        }
+
+        function scrollToVal(wheel, min, val, smooth = true) {
+          const top = (val - min) * ROW_H;
+          wheel.scrollTo({ top, behavior: smooth ? 'smooth' : 'auto' });
+        }
+
+        function markActive(wheel, min, val) {
+          const nodes = wheel.querySelectorAll('li');
+          nodes.forEach((n) => n.classList.remove('is-active'));
+          const i = val - min;
+          if (nodes[i]) nodes[i].classList.add('is-active');
+        }
+
+        function initOne(wheel) {
+          const min = parseInt(wheel.dataset.min || '1', 10);
+          const max = parseInt(wheel.dataset.max || '10', 10);
+          const key = wheel.dataset.key;
+
+          // чистим и строим список
+          wheel.innerHTML = '';
+          wheel.appendChild(buildList(min, max));
+
+          // обязательные inline-параметры (вдруг не подхватился CSS)
+          const pad = (ROW_H * VISIBLE - ROW_H) / 2;
+          wheel.style.scrollSnapType = 'y mandatory';
+          wheel.style.scrollPaddingTop = pad + 'px';
+          wheel.style.scrollPaddingBottom = pad + 'px';
+
+          let val = Math.min(max, Math.max(min, parseInt(wheel.dataset.value || String(min), 10)));
+          scrollToVal(wheel, min, val, false);
+          markActive(wheel, min, val);
+          pushToBridge(key, val);
+
+          // снап после прокрутки (debounce)
+          let t = null;
+          wheel.addEventListener(
+            'scroll',
+            () => {
+              if (t) cancelAnimationFrame(t);
+              t = requestAnimationFrame(() => {
+                const v = nearestValue(wheel, min, max);
+                if (v !== val) {
+                  val = v;
+                  pushToBridge(key, v);
+                }
+                scrollToVal(wheel, min, v, true);
+                markActive(wheel, min, v);
+              });
+            },
+            { passive: true }
+          );
+
+          // клики по строкам
+          wheel.addEventListener('click', (e) => {
+            const li = e.target.closest('li[data-val]');
+            if (!li) return;
+            const v = parseInt(li.dataset.val, 10);
+            val = v;
+            scrollToVal(wheel, min, v, true);
+            markActive(wheel, min, v);
+            pushToBridge(key, v);
+          });
+
+          // клавиатура
+          wheel.tabIndex = 0;
+          wheel.addEventListener('keydown', (e) => {
+            let d = 0;
+            if (e.key === 'ArrowUp') d = -1;
+            else if (e.key === 'ArrowDown') d = 1;
+            else if (e.key === 'PageUp') d = -5;
+            else if (e.key === 'PageDown') d = 5;
+            else if (e.key === 'Home') d = min - val;
+            else if (e.key === 'End') d = max - val;
+            else return;
+
+            const next = Math.max(min, Math.min(max, val + d));
+            val = next;
+            scrollToVal(wheel, min, next, true);
+            markActive(wheel, min, next);
+            pushToBridge(key, next);
+            e.preventDefault();
+          });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+          document.querySelectorAll('.wheel').forEach(initOne);
+        });
+      })();
+    </script>
+
+    <!-- Точка входа модулей приложения -->
     <script type="module" src="./src/js/main.js"></script>
   </body>
 </html>

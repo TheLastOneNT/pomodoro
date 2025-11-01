@@ -7,7 +7,14 @@
   --ink: #e9edf3;
   --muted: #b7c0cc;
   --accent: #7ef9c0;
+
+  /* Параметры колёс */
+  --wheel-row-h: 40px; /* высота строки */
+  --wheel-rows: 5; /* нечётное */
+  --wheel-nudge: 0px; /* при необходимости сдвинь +1..+2px */
+  --wheel-pad-x: 12px;
 }
+
 body.day {
   --sb-bg: #f6f8fb;
   --sb-card: #fff;
@@ -32,18 +39,18 @@ body.day {
   pointer-events: auto;
 }
 
-/* >>> Меню теперь справа <<< */
+/* >>> Меню справа <<< */
 .sb {
   position: fixed;
   top: 0;
-  right: 0; /* было left: 0 */
+  right: 0;
   left: auto;
   height: 100svh;
   width: var(--sb-w);
-  transform: translateX(100%); /* было -100% */
+  transform: translateX(100%);
   background: var(--sb-bg);
   color: var(--ink);
-  border-left: 1px solid var(--sb-line); /* было border-right */
+  border-left: 1px solid var(--sb-line);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
   transition: transform 0.28s cubic-bezier(0.2, 0.6, 0.2, 1);
   z-index: 80;
@@ -125,11 +132,13 @@ body.day {
 .pane.is-open {
   display: grid;
 }
+
 .grid2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
+
 .pill.in {
   display: flex;
   align-items: center;
@@ -147,12 +156,14 @@ body.day {
   font-weight: 800;
   outline: none;
 }
+
 .row-between {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
 }
+
 .btn {
   border: 1px solid var(--sb-line);
   background: var(--sb-card);
@@ -164,9 +175,11 @@ body.day {
 .btn.ghost {
   background: transparent;
 }
+
 .hidden {
   display: none !important;
 }
+
 .plan__meta {
   color: var(--muted);
   font-weight: 800;
@@ -175,6 +188,7 @@ body.day {
   color: var(--muted);
   font-size: 12px;
 }
+
 .save-row {
   display: grid;
   gap: 8px;
@@ -269,27 +283,31 @@ body.day {
   padding: 10px;
 }
 
-/* wheels — iOS-style picker */
+/* ===== wheels — iOS-style picker (скролл-версия) ===== */
+
 .wheels {
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
-
 .wheel-card {
   position: relative;
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 8px;
   background: var(--sb-card);
   border: 1px solid var(--sb-line);
-  border-radius: 20px;
-  padding: 10px;
+  border-radius: 22px;
+  padding: 12px;
+  overflow: hidden;
+  -webkit-user-select: none;
+  user-select: none;
 }
-
 .wheel-wrap {
   position: relative;
 }
-
+.wheel-wrap:not(:first-child) {
+  border-left: 1px solid var(--sb-line);
+}
 .wheel-label {
   color: var(--muted);
   font-size: 12px;
@@ -297,80 +315,83 @@ body.day {
   margin: 0 2px 6px;
 }
 
-/* Главное: цилиндр + маски + отсутствие скролл-полосы */
+/* колонка */
 .wheel {
   position: relative;
-  height: 216px; /* как на iOS: ~6 рядов высоты, выбор по центру */
+  box-sizing: content-box;
+  height: calc(var(--wheel-row-h) * var(--wheel-rows));
+
+  /* видимое окно центрируется паддингами */
+  --pad-vert: calc((var(--wheel-row-h) * var(--wheel-rows) - var(--wheel-row-h)) / 2);
+  padding-block: var(--pad-vert);
+  padding-inline: var(--wheel-pad-x);
+
   overflow: auto;
-  overscroll-behavior: contain;
-  border-radius: 14px;
-  border: 1px solid var(--sb-line);
-  background: transparent;
+  scroll-snap-type: y mandatory;
+  scroll-snap-stop: always; /* жёсткая остановка на строке */
+  scroll-padding-block: var(--pad-vert); /* снап к ЦЕНТРУ области */
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  perspective: 600px; /* 3D глубина */
+  -webkit-tap-highlight-color: transparent;
 }
 .wheel::-webkit-scrollbar {
   display: none;
 }
 
+/* список */
 .wheel ul {
-  list-style: none;
   margin: 0;
   padding: 0;
+  list-style: none;
+  position: relative;
+  z-index: 1;
 }
-
 .wheel li {
-  height: 36px; /* шаг строки */
-  display: grid;
-  place-items: center;
-  font-weight: 900;
-  transform-origin: center center -48px; /* радиус цилиндра */
-  backface-visibility: hidden;
+  height: var(--wheel-row-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font:
+    800 16px/1 system-ui,
+    -apple-system,
+    'SF Pro Text',
+    sans-serif;
   color: var(--ink);
-  opacity: 0.65; /* периферия тусклее */
-  will-change: transform, opacity, filter;
+  opacity: 0.65;
+  scroll-snap-align: center; /* ключ — к центру строки */
+  font-variant-numeric: tabular-nums lining-nums;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: opacity 0.12s ease;
 }
 .wheel li.is-active {
   opacity: 1;
-  text-shadow: 0 0 0.01px currentColor; /* делает шрифт более crisp */
+  font-weight: 900;
 }
 
-/* Выделяющая полоска по центру (строка выбора) */
-.wheel-highlight,
-.wheel__selector {
-  pointer-events: none;
+/* единая «пилюля» на три столбца */
+.wheel-pill {
   position: absolute;
-  left: 10px;
-  right: 10px;
-  top: 50%;
-  height: 36px;
+  left: 12px;
+  right: 12px;
+  top: calc(50% + var(--wheel-nudge));
+  height: var(--wheel-row-h);
   transform: translateY(-50%);
-  border-radius: 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
   box-shadow:
-    inset 0 0 0 1px var(--sb-line),
-    0 0 0 9999px rgba(0, 0, 0, 0); /* сохраняем слой сверху */
-}
-
-/* Cверху/снизу лёгкие «маски» как в iOS */
-.wheel::before,
-.wheel::after {
-  content: '';
-  position: sticky;
-  left: 0;
-  right: 0;
-  display: block;
-  height: calc((216px - 36px) / 2); /* верх/низ вне центральной строки */
-  z-index: 2;
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 1px 0 rgba(0, 0, 0, 0.25);
+  z-index: 5;
   pointer-events: none;
 }
-.wheel::before {
-  top: 0;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0));
-}
-.wheel::after {
-  bottom: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0));
+
+/* выключаем весь старый мусор, если он где-то остался */
+.wheel ._selector,
+.wheel-highlight,
+.wheel .fade-top,
+.wheel .fade-bottom {
+  display: none !important;
 }
 
 /* mobile */
@@ -388,8 +409,8 @@ body.day {
   .wheel-card {
     grid-template-columns: 1fr 1fr;
   }
-  .wheel-card .wheel:last-child {
-    grid-column: 1 / span 2;
+  .wheel-card .wheel-wrap:last-child {
+    grid-column: 1 / -1;
   }
 }
 @media (max-width: 380px) {
