@@ -42,7 +42,7 @@ export function initWheels() {
     upBtn.type = 'button';
     upBtn.className = 'wheel-btn wheel-btn--up';
     upBtn.setAttribute('aria-label', `Увеличить ${label.toLowerCase()}`);
-    upBtn.innerHTML = '<span aria-hidden="true">▲</span>';
+    upBtn.innerHTML = '<span class="chev" aria-hidden="true"></span>';
 
     const valueEl = document.createElement('div');
     valueEl.className = 'wheel-value';
@@ -51,7 +51,7 @@ export function initWheels() {
     downBtn.type = 'button';
     downBtn.className = 'wheel-btn wheel-btn--down';
     downBtn.setAttribute('aria-label', `Уменьшить ${label.toLowerCase()}`);
-    downBtn.innerHTML = '<span aria-hidden="true">▼</span>';
+    downBtn.innerHTML = '<span class="chev" aria-hidden="true"></span>';
 
     element.append(upBtn, valueEl, downBtn);
 
