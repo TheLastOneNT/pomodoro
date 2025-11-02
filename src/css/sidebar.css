@@ -467,10 +467,6 @@ body.day .wheel-btn {
     height: 38px;
   }
 
-  .wheel-value {
-    font-size: 24px;
-  }
-
   .item .meta {
     display: none;
   }
