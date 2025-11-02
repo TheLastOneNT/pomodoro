@@ -1,9 +1,9 @@
 // sidebar.js — меню «План занятий»: Настроить / Выбрать, общий список планов.
 // Тема управляется в app.js. Добавлены: фокус-ловушка, возврат фокуса, ESC только при открытом сайдбаре.
 
-import * as timer from "./timer.js";
-import { sync } from "./ui.js";
-import { fetchPlans, createPlan, updatePlan, deletePlan } from "./plansApi.js";
+import * as timer from './timer.js';
+import { sync } from './ui.js';
+import { fetchPlans, createPlan, updatePlan, deletePlan } from './plansApi.js';
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value | 0));
 const totalMinutes = (focus, relax, cycles) => cycles * (focus + relax);
@@ -14,14 +14,14 @@ function getFocusableElements(root) {
     root.querySelectorAll(
       'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
     )
-  ).filter((element) => !element.hasAttribute("disabled") && !element.getAttribute("aria-hidden"));
+  ).filter((element) => !element.hasAttribute('disabled') && !element.getAttribute('aria-hidden'));
 }
 
 function createFocusTrap(container) {
   let bound = false;
 
   const handleKeydown = (event) => {
-    if (event.key !== "Tab") return;
+    if (event.key !== 'Tab') return;
 
     const focusables = getFocusableElements(container);
     if (!focusables.length) return;
@@ -45,14 +45,14 @@ function createFocusTrap(container) {
     activate() {
       if (!container || bound) return;
       bound = true;
-      container.addEventListener("keydown", handleKeydown);
+      container.addEventListener('keydown', handleKeydown);
       const [firstFocusable] = getFocusableElements(container);
       firstFocusable?.focus();
     },
     deactivate() {
       if (!container || !bound) return;
       bound = false;
-      container.removeEventListener("keydown", handleKeydown);
+      container.removeEventListener('keydown', handleKeydown);
     },
   };
 }
@@ -60,25 +60,25 @@ function createFocusTrap(container) {
 class SidebarController {
   constructor() {
     this.dom = {
-      openButton: document.getElementById("openSettings"),
-      closeButton: document.getElementById("sbClose"),
-      sidebar: document.getElementById("sidebar"),
-      backdrop: document.getElementById("sidebarBackdrop"),
-      tabButtons: Array.from(document.querySelectorAll(".seg__btn[data-mode]")),
-      panes: Array.from(document.querySelectorAll(".pane")),
-      focusInput: document.getElementById("bFocus"),
-      breakInput: document.getElementById("bBreak"),
-      cyclesInput: document.getElementById("bCycles"),
-      summary: document.getElementById("bMeta"),
-      applyButton: document.getElementById("bApply"),
-      saveToggle: document.getElementById("bSaveToggle"),
-      saveBlock: document.getElementById("bSaveBlock"),
-      planNameInput: document.getElementById("bName"),
-      saveButton: document.getElementById("bSave"),
-      editBadge: document.getElementById("bEditTag"),
-      editName: document.getElementById("bEditName"),
-      cancelEditButton: document.getElementById("bCancelEdit"),
-      plansList: document.getElementById("listPlans"),
+      openButton: document.getElementById('openSettings'),
+      closeButton: document.getElementById('sbClose'),
+      sidebar: document.getElementById('sidebar'),
+      backdrop: document.getElementById('sidebarBackdrop'),
+      tabButtons: Array.from(document.querySelectorAll('.seg__btn[data-mode]')),
+      panes: Array.from(document.querySelectorAll('.pane')),
+      focusInput: document.getElementById('bFocus'),
+      breakInput: document.getElementById('bBreak'),
+      cyclesInput: document.getElementById('bCycles'),
+      summary: document.getElementById('bMeta'),
+      applyButton: document.getElementById('bApply'),
+      saveToggle: document.getElementById('bSaveToggle'),
+      saveBlock: document.getElementById('bSaveBlock'),
+      planNameInput: document.getElementById('bName'),
+      saveButton: document.getElementById('bSave'),
+      editBadge: document.getElementById('bEditTag'),
+      editName: document.getElementById('bEditName'),
+      cancelEditButton: document.getElementById('bCancelEdit'),
+      plansList: document.getElementById('listPlans'),
     };
 
     this.focusTrap = createFocusTrap(this.dom.sidebar);
@@ -91,18 +91,18 @@ class SidebarController {
     this.bindBuilder();
     this.bindPlanList();
 
-    this.openTab("build");
+    this.openTab('build');
     this.refreshPlans();
     this.updateBuilderSummary();
   }
 
   bindBaseInteractions() {
-    this.dom.openButton?.addEventListener("click", () => this.open());
-    this.dom.closeButton?.addEventListener("click", () => this.close());
-    this.dom.backdrop?.addEventListener("click", () => this.close());
+    this.dom.openButton?.addEventListener('click', () => this.open());
+    this.dom.closeButton?.addEventListener('click', () => this.close());
+    this.dom.backdrop?.addEventListener('click', () => this.close());
 
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape" && this.isOpen()) {
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && this.isOpen()) {
         this.close();
       }
     });
@@ -110,53 +110,53 @@ class SidebarController {
 
   bindTabs() {
     this.dom.tabButtons.forEach((button) =>
-      button.addEventListener("click", () => this.openTab(button.dataset.mode))
+      button.addEventListener('click', () => this.openTab(button.dataset.mode))
     );
   }
 
   bindBuilder() {
     const inputs = [this.dom.focusInput, this.dom.breakInput, this.dom.cyclesInput];
     inputs.forEach((input) =>
-      ["input", "change"].forEach((eventName) =>
+      ['input', 'change'].forEach((eventName) =>
         input?.addEventListener(eventName, () => this.updateBuilderSummary())
       )
     );
 
-    this.dom.applyButton?.addEventListener("click", () => this.applyBuilderToTimer());
+    this.dom.applyButton?.addEventListener('click', () => this.applyBuilderToTimer());
 
-    this.dom.saveToggle?.addEventListener("click", () => {
-      this.dom.saveBlock?.classList.toggle("hidden");
+    this.dom.saveToggle?.addEventListener('click', () => {
+      this.dom.saveBlock?.classList.toggle('hidden');
       this.dom.planNameInput?.focus();
     });
 
-    this.dom.cancelEditButton?.addEventListener("click", () => this.resetEditState());
+    this.dom.cancelEditButton?.addEventListener('click', () => this.resetEditState());
 
-    this.dom.saveButton?.addEventListener("click", () => this.handleSavePlan());
+    this.dom.saveButton?.addEventListener('click', () => this.handleSavePlan());
   }
 
   bindPlanList() {
-    this.dom.plansList?.addEventListener("click", (event) => this.handlePlanAction(event));
+    this.dom.plansList?.addEventListener('click', (event) => this.handlePlanAction(event));
   }
 
   isOpen() {
-    return this.dom.sidebar?.classList.contains("show");
+    return this.dom.sidebar?.classList.contains('show');
   }
 
   open() {
     this.lastActiveElement = document.activeElement;
-    this.dom.sidebar?.classList.add("show");
-    this.dom.backdrop?.classList.add("show");
-    this.dom.sidebar?.setAttribute("aria-hidden", "false");
+    this.dom.sidebar?.classList.add('show');
+    this.dom.backdrop?.classList.add('show');
+    this.dom.sidebar?.setAttribute('aria-hidden', 'false');
     this.focusTrap.activate();
   }
 
   close() {
-    this.dom.sidebar?.classList.remove("show");
-    this.dom.backdrop?.classList.remove("show");
-    this.dom.sidebar?.setAttribute("aria-hidden", "true");
+    this.dom.sidebar?.classList.remove('show');
+    this.dom.backdrop?.classList.remove('show');
+    this.dom.sidebar?.setAttribute('aria-hidden', 'true');
     this.focusTrap.deactivate();
 
-    if (this.lastActiveElement && typeof this.lastActiveElement.focus === "function") {
+    if (this.lastActiveElement && typeof this.lastActiveElement.focus === 'function') {
       this.lastActiveElement.focus();
     } else {
       this.dom.openButton?.focus();
@@ -165,18 +165,16 @@ class SidebarController {
 
   openTab(mode) {
     this.dom.tabButtons.forEach((button) =>
-      button.classList.toggle("is-active", button.dataset.mode === mode)
+      button.classList.toggle('is-active', button.dataset.mode === mode)
     );
-    this.dom.panes.forEach((pane) =>
-      pane.classList.toggle("is-open", pane.dataset.pane === mode)
-    );
+    this.dom.panes.forEach((pane) => pane.classList.toggle('is-open', pane.dataset.pane === mode));
   }
 
   readBuilderValues() {
     return {
       focus: clamp(this.dom.focusInput?.valueAsNumber || 25, 1, 180),
       relax: clamp(this.dom.breakInput?.valueAsNumber || 5, 1, 60),
-      cycles: clamp(this.dom.cyclesInput?.valueAsNumber || 4, 1, 20),
+      cycles: clamp(this.dom.cyclesInput?.valueAsNumber || 1, 1, 20),
     };
   }
 
@@ -200,11 +198,11 @@ class SidebarController {
   }
 
   toggleEditMode(enabled) {
-    this.dom.editBadge?.classList.toggle("hidden", !enabled);
-    this.dom.cancelEditButton?.classList.toggle("hidden", !enabled);
-    this.dom.saveBlock?.classList.toggle("hidden", !enabled);
+    this.dom.editBadge?.classList.toggle('hidden', !enabled);
+    this.dom.cancelEditButton?.classList.toggle('hidden', !enabled);
+    this.dom.saveBlock?.classList.toggle('hidden', !enabled);
     if (this.dom.saveButton) {
-      this.dom.saveButton.textContent = enabled ? "Сохранить изменения" : "Сохранить";
+      this.dom.saveButton.textContent = enabled ? 'Сохранить изменения' : 'Сохранить';
     }
   }
 
@@ -212,10 +210,10 @@ class SidebarController {
     this.editId = null;
     this.toggleEditMode(false);
     if (this.dom.planNameInput) {
-      this.dom.planNameInput.value = "";
+      this.dom.planNameInput.value = '';
     }
     if (this.dom.editName) {
-      this.dom.editName.textContent = "";
+      this.dom.editName.textContent = '';
     }
   }
 
@@ -233,8 +231,8 @@ class SidebarController {
 
   async handleSavePlan() {
     const { focus, relax, cycles } = this.readBuilderValues();
-    const nameInputValue = (this.dom.planNameInput?.value || "").trim();
-    const fallbackName = this.editId ? this.dom.editName?.textContent || "План" : "Мой план";
+    const nameInputValue = (this.dom.planNameInput?.value || '').trim();
+    const fallbackName = this.editId ? this.dom.editName?.textContent || 'План' : 'Мой план';
     const name = nameInputValue || fallbackName;
 
     if (this.editId) {
@@ -247,21 +245,21 @@ class SidebarController {
       });
       await this.refreshPlans();
       this.resetEditState();
-      this.openTab("pick");
+      this.openTab('pick');
       return;
     }
 
     await createPlan({ name, focus, break: relax, cycles });
     await this.refreshPlans();
     this.resetEditState();
-    this.openTab("pick");
+    this.openTab('pick');
   }
 
   async refreshPlans() {
     try {
       this.plans = await fetchPlans();
     } catch (error) {
-      console.error("[sidebar] Не удалось загрузить планы", error);
+      console.error('[sidebar] Не удалось загрузить планы', error);
       this.plans = [];
     }
     this.renderPlans();
@@ -270,10 +268,10 @@ class SidebarController {
   renderPlans() {
     if (!this.dom.plansList) return;
 
-    this.dom.plansList.innerHTML = "";
+    this.dom.plansList.innerHTML = '';
     if (!this.plans.length) {
-      const empty = document.createElement("div");
-      empty.className = "item";
+      const empty = document.createElement('div');
+      empty.className = 'item';
       empty.innerHTML =
         '<div class="name">Нет планов</div><div class="meta">Сохрани план во вкладке «Настроить»</div><div></div>';
       this.dom.plansList.appendChild(empty);
@@ -281,8 +279,8 @@ class SidebarController {
     }
 
     this.plans.forEach((plan) => {
-      const row = document.createElement("div");
-      row.className = "item";
+      const row = document.createElement('div');
+      row.className = 'item';
       row.innerHTML = `
         <div class="text">
           <span class="name">${plan.name}</span>
@@ -300,14 +298,14 @@ class SidebarController {
   }
 
   async handlePlanAction(event) {
-    const button = event.target.closest("button.icon");
+    const button = event.target.closest('button.icon');
     if (!button) return;
 
     const id = button.dataset.id;
     const action = button.dataset.act;
     if (!id || !action) return;
 
-    if (action === "run") {
+    if (action === 'run') {
       const plan = this.findPlan(id);
       if (!plan) return;
       this.applyPlan(plan);
@@ -315,13 +313,13 @@ class SidebarController {
       return;
     }
 
-    if (action === "del") {
+    if (action === 'del') {
       await deletePlan(id);
       await this.refreshPlans();
       return;
     }
 
-    if (action === "edit") {
+    if (action === 'edit') {
       const plan = this.findPlan(id);
       if (!plan) return;
 
@@ -329,7 +327,7 @@ class SidebarController {
       this.fillBuilderFromPlan(plan);
       this.toggleEditMode(true);
       this.dom.planNameInput?.focus();
-      this.openTab("build");
+      this.openTab('build');
     }
   }
 
