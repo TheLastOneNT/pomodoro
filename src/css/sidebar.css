@@ -188,24 +188,26 @@ body.day {
   width: 100%;
 }
 
+/* ====== КОМПАКТНЫЕ ПЕРЕКЛЮЧАТЕЛИ (в один ряд) ====== */
 .pane__switches {
   display: grid;
-  gap: 10px;
-  margin-top: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .switch {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: 1fr auto;
   align-items: center;
-  gap: 16px;
-  padding: 14px 18px;
+  gap: 8px; /* было 16px */
+  padding: 8px 10px; /* было 14px 18px */
   background: var(--sb-card-strong);
   border: 1px solid color-mix(in srgb, var(--accent) 22%, rgba(255, 255, 255, 0.1));
-  border-radius: 18px;
+  border-radius: 14px; /* было 18px */
   box-shadow:
-    0 18px 32px rgba(0, 0, 0, 0.38),
+    0 14px 26px rgba(0, 0, 0, 0.32),
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
   cursor: pointer;
   transition:
@@ -216,7 +218,7 @@ body.day {
 .switch:hover {
   border-color: color-mix(in srgb, var(--accent) 32%, rgba(255, 255, 255, 0.16));
   box-shadow:
-    0 22px 40px rgba(0, 0, 0, 0.46),
+    0 18px 36px rgba(0, 0, 0, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 .switch input {
@@ -225,28 +227,26 @@ body.day {
   opacity: 0;
   pointer-events: none;
 }
+
 .switch__text {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-}
+  display: contents;
+} /* без лишних контейнеров */
 .switch__title {
   font-weight: 800;
-  letter-spacing: 0.03em;
+  font-size: 14px; /* компактнее */
+  letter-spacing: 0.02em;
   color: var(--ink);
 }
 .switch__hint {
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.2;
-}
+  display: none;
+} /* убран лишний текст */
+
+/* Трек/ползунок — компакт */
 .switch__track {
-  position: relative;
-  width: 52px;
-  height: 30px;
+  width: 40px; /* было 52 */
+  height: 24px; /* было 30 */
   border-radius: 999px;
-  padding: 4px;
+  padding: 3px; /* было 4px */
   background: var(--switch-track);
   border: 1px solid color-mix(in srgb, var(--accent) 18%, rgba(255, 255, 255, 0.18));
   display: flex;
@@ -257,34 +257,35 @@ body.day {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 .switch__thumb {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px; /* было 20x20 */
   border-radius: 50%;
-  background: rgba(233, 237, 243, 0.85);
+  background: rgba(233, 237, 243, 0.9);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   transform: translateX(0);
   transition:
-    transform 0.24s ease,
-    background 0.24s ease,
-    box-shadow 0.24s ease;
+    transform 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
 }
 .switch input:checked ~ .switch__track {
-  background: color-mix(in srgb, var(--accent) 48%, rgba(0, 0, 0, 0.55));
-  border-color: color-mix(in srgb, var(--accent) 62%, rgba(255, 255, 255, 0.2));
+  background: color-mix(in srgb, var(--accent) 55%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--sb-line));
 }
 .switch input:checked ~ .switch__track .switch__thumb {
-  transform: translateX(20px);
+  transform: translateX(16px); /* под 40px ширину */
   background: var(--accent);
   box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 45%, rgba(0, 0, 0, 0.45));
 }
 .switch input:checked ~ .switch__text .switch__title {
   color: var(--accent);
 }
+
 body.day .switch {
   background: var(--sb-card);
   border-color: rgba(0, 0, 0, 0.08);
   box-shadow:
-    0 16px 26px rgba(15, 17, 20, 0.15),
+    0 12px 20px rgba(15, 17, 20, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.65);
 }
 body.day .switch__track {
@@ -461,21 +462,21 @@ body.day .btn.ghost {
 
 .wheels {
   display: grid;
-  gap: 16px;
-}
+  gap: 10px;
+} /* было 16px */
 
 .wheel-card {
   position: relative;
   display: flex;
   flex-wrap: nowrap;
-  gap: 16px;
-  padding: 20px 18px;
-  border-radius: 22px;
+  gap: 10px; /* было 16px */
+  padding: 12px 10px; /* было 20px 18px */
+  border-radius: 16px; /* было 22px */
   background: linear-gradient(160deg, rgba(8, 11, 17, 0.94), rgba(2, 3, 8, 0.98));
   border: 1px solid color-mix(in srgb, var(--accent) 18%, rgba(255, 255, 255, 0.08));
   box-shadow:
-    0 28px 48px rgba(0, 0, 0, 0.55),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    0 20px 34px rgba(0, 0, 0, 0.48),
+    /* чуть слабее */ inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 body.day .wheel-card {
@@ -490,33 +491,33 @@ body.day .wheel-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 0 6px;
+  gap: 6px; /* было 12px */
+  padding: 0 2px; /* было 0 6px */
 }
 
 .wheel-label {
   text-align: center;
   font-weight: 800;
-  font-size: 12px;
+  font-size: 10px; /* было 12px */
   text-transform: uppercase;
   letter-spacing: 0.52px;
   color: rgba(255, 255, 255, 0.6);
 }
-
 body.day .wheel-label {
   color: rgba(28, 31, 38, 0.7);
 }
 
+/* Контейнер счётчика: вверх / значение / вниз — компактные ряды */
 .wheel {
   position: relative;
   display: grid;
-  grid-template-rows: minmax(52px, auto) minmax(72px, auto) minmax(52px, auto);
+  grid-template-rows: 40px 54px 40px; /* было minmax(52,72,52) */
   justify-items: center;
   align-items: center;
-  gap: 8px;
+  gap: 4px; /* было 8px */
   width: 100%;
-  padding: 12px 4px;
-  border-radius: 20px;
+  padding: 6px 0; /* было 12px 4px */
+  border-radius: 16px; /* было 20px */
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: linear-gradient(180deg, rgba(9, 12, 18, 0.92), rgba(3, 4, 9, 0.98));
   box-shadow:
@@ -529,15 +530,12 @@ body.day .wheel-label {
     background 0.22s ease;
   --accent: #2f6fff;
 }
-
 .wheel[data-key='focus'] {
   --accent: #22c55e;
 }
-
 .wheel[data-key='break'] {
   --accent: #facc15;
 }
-
 .wheel[data-key='cycles'] {
   --accent: #f87171;
 }
@@ -546,7 +544,7 @@ body.day .wheel-label {
   border-color: color-mix(in srgb, var(--accent) 60%, rgba(255, 255, 255, 0.12));
   box-shadow:
     inset 0 0 0 1px color-mix(in srgb, var(--accent) 30%, rgba(255, 255, 255, 0.1)),
-    0 24px 40px rgba(0, 0, 0, 0.42);
+    0 18px 30px rgba(0, 0, 0, 0.36); /* чуть мягче */
 }
 
 body.day .wheel {
@@ -556,143 +554,94 @@ body.day .wheel {
     inset 0 0 0 1px rgba(255, 255, 255, 0.7),
     0 18px 28px rgba(15, 17, 20, 0.16);
 }
-
 body.day .wheel:focus-within {
   box-shadow:
     inset 0 0 0 1px color-mix(in srgb, var(--accent) 28%, rgba(255, 255, 255, 0.6)),
     0 18px 30px rgba(15, 17, 24, 0.2);
 }
 
+/* Число — компактнее */
 .wheel-input {
   width: 100%;
-  max-width: 108px;
+  max-width: 96px; /* было 108px */
   padding: 0;
   border: none;
   background: transparent;
   text-align: center;
   font:
-    800 44px/1.04 'SF Pro Display',
+    800 30px/1.05 'SF Pro Display',
     'SF Pro Text',
     system-ui,
     -apple-system,
     Inter,
     Arial,
-    sans-serif;
+    sans-serif; /* было 44px */
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   color: var(--accent);
   caret-color: var(--accent);
   transition: color 0.2s ease;
 }
-
 .wheel-input:focus {
   outline: none;
-  color: color-mix(in srgb, var(--accent) 90%, rgba(255, 255, 255, 0.15));
 }
-
 .wheel-input::-webkit-outer-spin-button,
 .wheel-input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-
 .wheel-input::placeholder {
   color: color-mix(in srgb, var(--accent) 38%, transparent);
 }
 
+/* ===== Стрелки без рамок/фона/теней — только крупный шеврон ===== */
 .wheel-arrow {
   position: relative;
   width: 100%;
-  max-width: 112px;
-  height: 60px;
+  max-width: 96px; /* было 112px */
+  height: 40px; /* было 60px */
   display: flex;
   align-items: center;
   justify-content: center;
-  border: none;
-  border-radius: 18px;
+  border: 0 !important;
+  border-radius: 12px; /* визуальная мягкость, но без рамки */
+  background: transparent !important; /* убрать фон */
+  box-shadow: none !important; /* убрать тени */
   color: var(--accent);
   cursor: pointer;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(6, 9, 14, 0.75));
-  border: 1px solid color-mix(in srgb, var(--accent) 20%, rgba(255, 255, 255, 0.12));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 18px 28px rgba(0, 0, 0, 0.42);
   transition:
-    transform 0.18s ease,
-    color 0.2s ease,
-    box-shadow 0.22s ease,
-    background 0.22s ease,
-    border-color 0.22s ease;
+    transform 0.12s ease,
+    opacity 0.12s ease;
   overflow: hidden;
 }
-
+/* декоративные оверлеи и границы отключены */
 .wheel-arrow::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  opacity: 0;
-  transition: opacity 0.18s ease;
-}
-
-.wheel-arrow--up::after {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--accent) 30%, transparent) 0%,
-    transparent 80%
-  );
-}
-
-.wheel-arrow--down::after {
-  background: linear-gradient(
-    0deg,
-    color-mix(in srgb, var(--accent) 26%, transparent) 0%,
-    transparent 80%
-  );
+  content: none;
 }
 
 .wheel-arrow:hover {
-  border-color: color-mix(in srgb, var(--accent) 28%, rgba(255, 255, 255, 0.18));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 22px 32px rgba(0, 0, 0, 0.5);
+  transform: translateY(-1px);
 }
-
 .wheel-arrow:active {
-  transform: translateY(1px);
+  transform: translateY(0);
 }
-
 .wheel-arrow:focus-visible {
-  box-shadow:
-    0 0 0 3px color-mix(in srgb, var(--accent) 32%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-.wheel-arrow:active::after,
-.wheel-arrow:focus-visible::after {
-  opacity: 1;
+  outline: 2px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  outline-offset: 2px;
 }
 
 .wheel-arrow svg {
-  width: 24px;
-  height: 24px;
+  width: 30px;
+  height: 30px; /* крупнее шеврон */
   display: block;
+  color: currentColor;
 }
 
-body.day .wheel {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(231, 235, 246, 0.9));
-}
-
+/* day-варианты для стрелок больше не добавляют фон/бордер/тени */
 body.day .wheel-arrow {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(208, 217, 244, 0.7));
-  border-color: color-mix(in srgb, var(--accent) 22%, rgba(0, 0, 0, 0.12));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 16px 24px rgba(15, 17, 24, 0.2);
-}
-
-body.day .wheel-arrow:hover {
-  border-color: color-mix(in srgb, var(--accent) 32%, rgba(0, 0, 0, 0.14));
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
 }
 
 .wheel ._selector,
@@ -711,42 +660,35 @@ body.day .wheel-arrow:hover {
   .sb {
     width: min(88vw, 360px);
   }
-
   .pane__actions {
     grid-template-columns: 1fr;
   }
 }
 @media (max-width: 480px) {
   .wheel-card {
-    padding: 16px 12px;
-    gap: 12px;
-  }
-
+    padding: 10px 8px;
+    gap: 8px;
+  } /* меньше */
   .wheel {
-    grid-template-rows: minmax(48px, auto) minmax(64px, auto) minmax(48px, auto);
-    padding: 10px 2px;
-  }
-
+    grid-template-rows: 36px 48px 36px;
+    padding: 4px 0;
+  } /* меньше */
   .wheel-arrow {
-    max-width: 96px;
-    height: 52px;
+    max-width: 82px;
+    height: 36px;
   }
-
   .wheel-input {
-    font-size: 36px;
-  }
+    font-size: 26px;
+  } /* читабельно и компактно */
 }
-
 @media (max-width: 380px) {
   .wheel-label {
     font-size: 10px;
   }
-
   .wheel-arrow {
-    max-width: 88px;
-    height: 48px;
+    max-width: 82px;
+    height: 36px;
   }
-
   .item .meta {
     display: none;
   }

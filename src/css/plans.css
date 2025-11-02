@@ -4,21 +4,20 @@
 
 .wheels {
   display: grid;
-  gap: 16px;
+  gap: 10px;
 }
 
 .wheel-card {
   position: relative;
   display: flex;
-  flex-wrap: nowrap;
-  gap: 16px;
-  padding: 20px 18px;
-  border-radius: 22px;
-  background: linear-gradient(160deg, rgba(8, 11, 17, 0.94), rgba(2, 3, 8, 0.98));
-  border: 1px solid color-mix(in srgb, var(--accent) 18%, rgba(255, 255, 255, 0.08));
+  gap: 10px; /* меньше */
+  padding: 12px 10px; /* меньше */
+  border-radius: 16px;
+  background: var(--sb-card);
+  border: 1px solid var(--sb-line);
   box-shadow:
-    0 28px 48px rgba(0, 0, 0, 0.55),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    0 8px 20px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 body.day .wheel-card {
@@ -33,17 +32,17 @@ body.day .wheel-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 0 6px;
+  gap: 6px; /* меньше */
+  padding: 0 2px;
 }
 
 .wheel-label {
   text-align: center;
   font-weight: 800;
-  font-size: 12px;
+  font-size: 10px; /* меньше */
+  letter-spacing: 0.4px;
   text-transform: uppercase;
-  letter-spacing: 0.52px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--muted);
 }
 
 body.day .wheel-label {
@@ -51,45 +50,55 @@ body.day .wheel-label {
 }
 
 .wheel {
+  --accent: #2f6fff;
   position: relative;
   display: grid;
-  grid-template-rows: minmax(52px, auto) minmax(72px, auto) minmax(52px, auto);
+  grid-template-rows: 40px 54px 40px; /* компактные ряды */
   justify-items: center;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   width: 100%;
-  padding: 12px 4px;
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: linear-gradient(180deg, rgba(9, 12, 18, 0.92), rgba(3, 4, 9, 0.98));
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.03),
-    inset 0 12px 28px rgba(255, 255, 255, 0.02);
+  padding: 6px 0; /* меньше отступы */
+  border-radius: 16px;
+  border: 1px solid var(--sb-line);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.12));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
   touch-action: manipulation;
-  transition:
-    border-color 0.22s ease,
-    box-shadow 0.22s ease,
-    background 0.22s ease;
-  --accent: #2f6fff;
 }
 
 .wheel[data-key='focus'] {
   --accent: #22c55e;
 }
-
 .wheel[data-key='break'] {
-  --accent: #facc15;
+  --accent: #f59e0b;
 }
-
 .wheel[data-key='cycles'] {
-  --accent: #f87171;
+  --accent: #ef4444;
 }
 
 .wheel:focus-within {
-  border-color: color-mix(in srgb, var(--accent) 60%, rgba(255, 255, 255, 0.12));
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--accent) 30%, rgba(255, 255, 255, 0.1)),
-    0 24px 40px rgba(0, 0, 0, 0.42);
+  outline: 2px solid color-mix(in srgb, var(--accent) 60%, transparent);
+  outline-offset: 2px;
+}
+
+.wheel-value,
+.wheel-input {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  text-align: center;
+  font:
+    800 30px/1.05 'SF Pro Display',
+    'SF Pro Text',
+    system-ui,
+    -apple-system,
+    Inter,
+    Arial,
+    sans-serif;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  color: var(--accent);
 }
 
 body.day .wheel {
@@ -108,29 +117,14 @@ body.day .wheel:focus-within {
 
 .wheel-input {
   width: 100%;
-  max-width: 108px;
-  padding: 0;
-  border: none;
+  max-width: 96px;
   background: transparent;
-  text-align: center;
-  font:
-    800 44px/1.04 'SF Pro Display',
-    'SF Pro Text',
-    system-ui,
-    -apple-system,
-    Inter,
-    Arial,
-    sans-serif;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.05em;
-  color: var(--accent);
+  border: 0;
+  padding: 0;
   caret-color: var(--accent);
-  transition: color 0.2s ease;
 }
-
 .wheel-input:focus {
   outline: none;
-  color: color-mix(in srgb, var(--accent) 90%, rgba(255, 255, 255, 0.15));
 }
 
 .wheel-input::-webkit-outer-spin-button,
@@ -143,115 +137,80 @@ body.day .wheel:focus-within {
   color: color-mix(in srgb, var(--accent) 38%, transparent);
 }
 
+/* === СТРЕЛКИ БЕЗ РАМОК/ФОНОВ (только крупный шеврон) === */
+.wheel-btn,
 .wheel-arrow {
-  position: relative;
   width: 100%;
-  max-width: 112px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  border-radius: 18px;
-  color: var(--accent);
+  max-width: 96px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
   cursor: pointer;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(6, 9, 14, 0.75));
-  border: 1px solid color-mix(in srgb, var(--accent) 20%, rgba(255, 255, 255, 0.12));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 18px 28px rgba(0, 0, 0, 0.42);
   transition:
-    transform 0.18s ease,
-    color 0.2s ease,
-    box-shadow 0.22s ease,
-    background 0.22s ease,
-    border-color 0.22s ease;
-  overflow: hidden;
+    transform 0.12s ease,
+    opacity 0.12s ease;
 }
 
-.wheel-arrow::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  opacity: 0;
-  transition: opacity 0.18s ease;
-}
-
-.wheel-arrow--up::after {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--accent) 30%, transparent) 0%,
-    transparent 80%
-  );
-}
-
-.wheel-arrow--down::after {
-  background: linear-gradient(
-    0deg,
-    color-mix(in srgb, var(--accent) 26%, transparent) 0%,
-    transparent 80%
-  );
-}
-
+.wheel-btn:hover,
 .wheel-arrow:hover {
-  border-color: color-mix(in srgb, var(--accent) 28%, rgba(255, 255, 255, 0.18));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 22px 32px rgba(0, 0, 0, 0.5);
+  transform: translateY(-1px);
+}
+.wheel-btn:active,
+.wheel-arrow:active {
+  transform: translateY(0);
 }
 
-.wheel-arrow:active {
+/* Крупные шевроны */
+.wheel-btn span,
+.wheel-arrow svg {
+  width: 30px; /* больше стрелки */
+  height: 30px;
+  display: block;
+  color: var(--accent);
+}
+
+.wheel-btn--up span {
+  transform: translateY(-1px);
+}
+.wheel-btn--down span {
   transform: translateY(1px);
 }
 
-.wheel-arrow:focus-visible {
-  box-shadow:
-    0 0 0 3px color-mix(in srgb, var(--accent) 32%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+/* Скрываем артефакты старой реализации */
+.wheel ._selector,
+.wheel-highlight,
+.inputs-bridge.hidden {
+  display: none !important;
 }
 
-.wheel-arrow:active::after,
-.wheel-arrow:focus-visible::after {
-  opacity: 1;
-}
+/* Удалены любые бордеры/фоны/блур-оверлеи around .wheel-arrow в hover/focus/day */
 
-.wheel-arrow svg {
-  width: 24px;
-  height: 24px;
-  display: block;
-}
-
-body.day .wheel-arrow {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(208, 217, 244, 0.7));
-  border-color: color-mix(in srgb, var(--accent) 22%, rgba(0, 0, 0, 0.12));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 16px 24px rgba(15, 17, 24, 0.2);
-}
-
-body.day .wheel-arrow:hover {
-  border-color: color-mix(in srgb, var(--accent) 32%, rgba(0, 0, 0, 0.14));
-}
-
+/* === Адаптив === */
 @media (max-width: 640px) {
   .wheel-card {
-    padding: 16px 12px;
-    gap: 12px;
+    padding: 10px 8px;
+    gap: 8px;
   }
-
   .wheel {
-    grid-template-rows: minmax(48px, auto) minmax(64px, auto) minmax(48px, auto);
-    padding: 10px 2px;
+    grid-template-rows: 36px 48px 36px;
+    padding: 4px 0;
   }
-
-  .wheel-arrow {
-    max-width: 96px;
-    height: 52px;
-  }
-
   .wheel-input {
-    font-size: 36px;
+    font-size: 26px;
+    max-width: 82px;
+  }
+  .wheel-btn,
+  .wheel-arrow {
+    max-width: 82px;
+    height: 36px;
+  }
+  .wheel-btn span,
+  .wheel-arrow svg {
+    width: 26px;
+    height: 26px;
   }
 }
 
@@ -260,20 +219,13 @@ body.day .wheel-arrow:hover {
     padding: 14px 10px;
     gap: 10px;
   }
-
   .wheel {
     gap: 6px;
     padding: 8px 0;
   }
-
-  .wheel-arrow {
-    max-width: 88px;
-    height: 48px;
-  }
-
   .wheel-input {
     font-size: 32px;
-  }
+  } /* читаемо на очень узких экранах */
 }
 
 /* bridge для старых инпутов */
