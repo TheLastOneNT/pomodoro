@@ -73,23 +73,31 @@ export function initWheels() {
     };
 
     const changeBy = (delta) => {
-      if (delta === 0) return;
+      if (!delta) return;
       applyValue(currentValue + delta);
     };
+
+    // Клики по кнопкам
     addListener(upBtn, 'click', () => changeBy(step));
     addListener(downBtn, 'click', () => changeBy(-step));
+
+    // Прокрутка колёсиком (вниз = уменьшаем)
     addListener(
       element,
       'wheel',
       (event) => {
         event.preventDefault();
-        const direction = Math.sign(event.deltaY || event.detail || 0);
-        if (direction === 0) return;
-        changeBy(direction > 0 ? -step : step);
+        const d = Math.sign(event.deltaY || event.detail || 0);
+        if (!d) return;
+        changeBy(d > 0 ? -step : step);
       },
       { passive: false }
     );
+
+    // Клавиатура
     addListener(element, 'keydown', (event) => {
+      let delta = 0; // <-- объявляем локально
+
       switch (event.key) {
         case 'ArrowUp':
           delta = step;
@@ -112,22 +120,27 @@ export function initWheels() {
           event.preventDefault();
           return;
         default:
-          return;
+          return; // другие клавиши игнорируем
       }
 
       event.preventDefault();
       changeBy(delta);
     });
+
+    // Стартовое значение
     applyValue(currentValue, { force: true, emit: true });
+
     return () => {
       cleanup.forEach((fn) => fn());
     };
   };
+
   const destroyers = [];
   document.querySelectorAll('.wheel').forEach((element) => {
     const destroy = initPicker(element);
     if (destroy) destroyers.push(destroy);
   });
+
   return () => {
     destroyers.forEach((fn) => fn());
   };
