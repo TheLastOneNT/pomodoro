@@ -283,114 +283,158 @@ body.day {
   padding: 10px;
 }
 
-/* ===== wheels — iOS-style picker (скролл-версия) ===== */
+/* ===========================
+   iOS-style Picker Wheels
+   =========================== */
 
 .wheels {
   display: grid;
   gap: 12px;
 }
+
 .wheel-card {
   position: relative;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: 0;
   background: var(--sb-card);
   border: 1px solid var(--sb-line);
-  border-radius: 22px;
-  padding: 12px;
+  border-radius: 16px;
+  padding: 16px 12px;
   overflow: hidden;
-  -webkit-user-select: none;
-  user-select: none;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
+
 .wheel-wrap {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 8px;
 }
+
 .wheel-wrap:not(:first-child) {
   border-left: 1px solid var(--sb-line);
 }
+
 .wheel-label {
-  color: var(--muted);
-  font-size: 12px;
+  text-align: center;
   font-weight: 800;
-  margin: 0 2px 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  opacity: 0.8;
 }
 
-/* колонка */
+/* Контейнер колеса */
 .wheel {
   position: relative;
-  box-sizing: content-box;
-  height: calc(var(--wheel-row-h) * var(--wheel-rows));
-
-  /* видимое окно центрируется паддингами */
-  --pad-vert: calc((var(--wheel-row-h) * var(--wheel-rows) - var(--wheel-row-h)) / 2);
-  padding-block: var(--pad-vert);
-  padding-inline: var(--wheel-pad-x);
-
-  overflow: auto;
+  height: 200px;
+  overflow-y: scroll;
+  overflow-x: hidden;
   scroll-snap-type: y mandatory;
-  scroll-snap-stop: always; /* жёсткая остановка на строке */
-  scroll-padding-block: var(--pad-vert); /* снап к ЦЕНТРУ области */
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  -webkit-tap-highlight-color: transparent;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: pan-y;
 }
+
+.wheel:active {
+  cursor: grabbing;
+}
+
 .wheel::-webkit-scrollbar {
   display: none;
 }
 
-/* список */
+/* Список значений */
 .wheel ul {
-  margin: 0;
-  padding: 0;
   list-style: none;
+  margin: 0;
+  padding: 80px 0; /* паддинги для центрирования */
   position: relative;
-  z-index: 1;
 }
+
 .wheel li {
-  height: var(--wheel-row-h);
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font:
-    800 16px/1 system-ui,
-    -apple-system,
-    'SF Pro Text',
-    sans-serif;
+  font-size: 20px;
+  font-weight: 600;
   color: var(--ink);
-  opacity: 0.65;
-  scroll-snap-align: center; /* ключ — к центру строки */
-  font-variant-numeric: tabular-nums lining-nums;
+  scroll-snap-align: center;
+  transition: all 0.15s ease;
+  opacity: 0.3;
+  transform: scale(0.85);
+  font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-  transition: opacity 0.12s ease;
-}
-.wheel li.is-active {
-  opacity: 1;
-  font-weight: 900;
 }
 
-/* единая «пилюля» на три столбца */
+.wheel li.is-active {
+  opacity: 1;
+  transform: scale(1);
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/* Градиентные фейды сверху и снизу */
+.wheel::before,
+.wheel::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 80px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.wheel::before {
+  top: 0;
+  background: linear-gradient(to bottom, var(--sb-card) 0%, var(--sb-card) 20%, transparent 100%);
+}
+
+.wheel::after {
+  bottom: 0;
+  background: linear-gradient(to top, var(--sb-card) 0%, var(--sb-card) 20%, transparent 100%);
+}
+
+/* Центральная подсветка (selection indicator) */
 .wheel-pill {
   position: absolute;
   left: 12px;
   right: 12px;
-  top: calc(50% + var(--wheel-nudge));
-  height: var(--wheel-row-h);
+  top: 50%;
+  height: 40px;
   transform: translateY(-50%);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--sb-line);
   box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
-    0 1px 0 rgba(0, 0, 0, 0.25);
-  z-index: 5;
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
   pointer-events: none;
+  z-index: 1;
 }
 
-/* выключаем весь старый мусор, если он где-то остался */
+body.day .wheel-pill {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow:
+    inset 0 1px 0 rgba(0, 0, 0, 0.05),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* Скрываем старые элементы */
 .wheel ._selector,
 .wheel-highlight,
-.wheel .fade-top,
-.wheel .fade-bottom {
+.inputs-bridge.hidden {
   display: none !important;
 }
 
@@ -405,15 +449,46 @@ body.day {
     width: min(88vw, 360px);
   }
 }
-@media (max-width: 420px) {
+@media (max-width: 480px) {
   .wheel-card {
-    grid-template-columns: 1fr 1fr;
+    padding: 12px 8px;
   }
-  .wheel-card .wheel-wrap:last-child {
-    grid-column: 1 / -1;
+
+  .wheel-wrap {
+    padding: 0 4px;
+  }
+
+  .wheel {
+    height: 180px;
+  }
+
+  .wheel ul {
+    padding: 70px 0;
+  }
+
+  .wheel li {
+    font-size: 18px;
+    height: 36px;
+  }
+
+  .wheel-pill {
+    height: 36px;
+  }
+
+  .wheel::before,
+  .wheel::after {
+    height: 70px;
   }
 }
+
 @media (max-width: 380px) {
+  .wheel-label {
+    font-size: 10px;
+  }
+
+  .wheel li {
+    font-size: 16px;
+  }
   .item .meta {
     display: none;
   }
