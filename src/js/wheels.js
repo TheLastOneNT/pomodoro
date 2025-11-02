@@ -36,22 +36,45 @@ export function initWheels() {
     element.setAttribute('aria-valuemin', String(min));
     element.setAttribute('aria-valuemax', String(max));
     element.setAttribute('aria-label', label);
-    element.tabIndex = 0;
+    element.tabIndex = -1;
 
-    const upBtn = document.createElement('button');
-    upBtn.type = 'button';
-    upBtn.className = 'wheel-btn wheel-btn--up';
-    upBtn.setAttribute('aria-label', `Увеличить ${label.toLowerCase()}`);
-    upBtn.innerHTML = '<span class="chev" aria-hidden="true"></span>';
+    const createArrow = (direction) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = `wheel-arrow wheel-arrow--${direction}`;
+      button.setAttribute(
+        'aria-label',
+        `${direction === 'up' ? 'Увеличить' : 'Уменьшить'} ${label.toLowerCase()}`
+      );
+      const points = direction === 'up' ? '6 15 12 9 18 15' : '6 9 12 15 18 9';
+      button.innerHTML = `
+        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+          <polyline
+            points="${points}"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      `;
+      return button;
+    };
 
-    const valueEl = document.createElement('div');
-    valueEl.className = 'wheel-value';
+    const upBtn = createArrow('up');
 
-    const downBtn = document.createElement('button');
-    downBtn.type = 'button';
-    downBtn.className = 'wheel-btn wheel-btn--down';
-    downBtn.setAttribute('aria-label', `Уменьшить ${label.toLowerCase()}`);
-    downBtn.innerHTML = '<span class="chev" aria-hidden="true"></span>';
+    const valueEl = document.createElement('input');
+    valueEl.type = 'text';
+    valueEl.inputMode = 'numeric';
+    valueEl.autocomplete = 'off';
+    valueEl.spellcheck = false;
+    valueEl.pattern = '\\d*';
+    valueEl.className = 'wheel-input';
+    valueEl.setAttribute('aria-label', label);
+    valueEl.setAttribute('maxlength', String(max).length);
+
+    const downBtn = createArrow('down');
 
     element.append(upBtn, valueEl, downBtn);
 
@@ -68,7 +91,7 @@ export function initWheels() {
       element.dataset.value = String(currentValue);
       element.setAttribute('aria-valuenow', String(currentValue));
       element.setAttribute('aria-valuetext', String(currentValue));
-      valueEl.textContent = String(currentValue);
+      valueEl.value = String(currentValue);
       if (emit) updateInput(key, currentValue);
     };
 
@@ -77,9 +100,68 @@ export function initWheels() {
       applyValue(currentValue + delta);
     };
 
-    // Клики по кнопкам
-    addListener(upBtn, 'click', () => changeBy(step));
-    addListener(downBtn, 'click', () => changeBy(-step));
+    const setupHold = (button, delta) => {
+      let skipNextClick = false;
+      let holdTimeout = null;
+      let holdInterval = null;
+
+      const clearTimers = () => {
+        if (holdTimeout) {
+          clearTimeout(holdTimeout);
+          holdTimeout = null;
+        }
+        if (holdInterval) {
+          clearInterval(holdInterval);
+          holdInterval = null;
+        }
+      };
+
+      const stop = () => {
+        clearTimers();
+        setTimeout(() => {
+          skipNextClick = false;
+        }, 0);
+      };
+
+      addListener(button, 'pointerdown', (event) => {
+        skipNextClick = true;
+        event.preventDefault();
+        try {
+          button.setPointerCapture(event.pointerId);
+        } catch {}
+        changeBy(delta);
+        clearTimers();
+        holdTimeout = window.setTimeout(() => {
+          holdInterval = window.setInterval(() => changeBy(delta), 80);
+        }, 350);
+      });
+
+      ['pointerup', 'pointerleave', 'pointercancel', 'lostpointercapture'].forEach((eventName) =>
+        addListener(button, eventName, stop)
+      );
+
+      addListener(button, 'click', (event) => {
+        if (skipNextClick) {
+          event.preventDefault();
+          skipNextClick = false;
+          return;
+        }
+        changeBy(delta);
+      });
+
+      addListener(button, 'keydown', (event) => {
+        if (event.key === ' ' || event.key === 'Enter') {
+          skipNextClick = true;
+          event.preventDefault();
+          changeBy(delta);
+        }
+      });
+
+      cleanup.push(() => clearTimers());
+    };
+
+    setupHold(upBtn, step);
+    setupHold(downBtn, -step);
 
     // Прокрутка колёсиком (вниз = уменьшаем)
     addListener(
@@ -95,7 +177,32 @@ export function initWheels() {
     );
 
     // Клавиатура
-    addListener(element, 'keydown', (event) => {
+    const commitManualValue = () => {
+      const digits = valueEl.value.replace(/\D+/g, '');
+      valueEl.value = digits;
+      if (!digits) {
+        valueEl.value = String(currentValue);
+        return;
+      }
+      const parsed = parseInt(digits, 10);
+      if (Number.isNaN(parsed)) {
+        valueEl.value = String(currentValue);
+        return;
+      }
+      applyValue(parsed, { force: true });
+    };
+
+    addListener(valueEl, 'input', () => {
+      const digits = valueEl.value.replace(/\D+/g, '');
+      if (digits !== valueEl.value) {
+        valueEl.value = digits;
+      }
+    });
+
+    addListener(valueEl, 'change', commitManualValue);
+    addListener(valueEl, 'blur', commitManualValue);
+
+    addListener(valueEl, 'keydown', (event) => {
       let delta = 0; // <-- объявляем локально
 
       switch (event.key) {
@@ -118,6 +225,11 @@ export function initWheels() {
         case 'End':
           applyValue(max);
           event.preventDefault();
+          return;
+        case 'Enter':
+          event.preventDefault();
+          commitManualValue();
+          valueEl.select();
           return;
         default:
           return; // другие клавиши игнорируем
