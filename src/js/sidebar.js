@@ -3,6 +3,7 @@
 
 import * as timer from './timer.js';
 import { sync } from './ui.js';
+import { state } from './state.js';
 import { fetchPlans, createPlan, updatePlan, deletePlan } from './plansApi.js';
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value | 0));
@@ -79,6 +80,8 @@ class SidebarController {
       editName: document.getElementById('bEditName'),
       cancelEditButton: document.getElementById('bCancelEdit'),
       plansList: document.getElementById('listPlans'),
+      autoToggle: document.getElementById('bAuto'),
+      soundToggle: document.getElementById('bSound'),
     };
 
     this.focusTrap = createFocusTrap(this.dom.sidebar);
@@ -89,11 +92,13 @@ class SidebarController {
     this.bindBaseInteractions();
     this.bindTabs();
     this.bindBuilder();
+    this.bindOptions();
     this.bindPlanList();
 
     this.openTab('build');
     this.refreshPlans();
     this.updateBuilderSummary();
+    this.syncOptionToggles();
   }
 
   bindBaseInteractions() {
@@ -134,6 +139,31 @@ class SidebarController {
     this.dom.saveButton?.addEventListener('click', () => this.handleSavePlan());
   }
 
+  bindOptions() {
+    this.dom.autoToggle?.addEventListener('change', () => {
+      const nextValue = !!this.dom.autoToggle?.checked;
+      timer.setAuto(nextValue);
+      state.auto = nextValue;
+      const legacyAuto = document.getElementById('autoToggle');
+      if (legacyAuto) legacyAuto.checked = nextValue;
+      this.syncOptionToggles();
+      sync();
+    });
+
+    this.dom.soundToggle?.addEventListener('change', () => {
+      state.sound = !!this.dom.soundToggle?.checked;
+      const legacySound = document.getElementById('soundToggle');
+      if (legacySound) legacySound.checked = state.sound;
+      this.syncOptionToggles();
+      sync();
+    });
+  }
+
+  syncOptionToggles() {
+    if (this.dom.autoToggle) this.dom.autoToggle.checked = !!state.auto;
+    if (this.dom.soundToggle) this.dom.soundToggle.checked = !!state.sound;
+  }
+
   bindPlanList() {
     this.dom.plansList?.addEventListener('click', (event) => this.handlePlanAction(event));
   }
@@ -147,6 +177,7 @@ class SidebarController {
     this.dom.sidebar?.classList.add('show');
     this.dom.backdrop?.classList.add('show');
     this.dom.sidebar?.setAttribute('aria-hidden', 'false');
+    this.syncOptionToggles();
     this.focusTrap.activate();
   }
 
