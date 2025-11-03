@@ -14,17 +14,12 @@ const dom = {
   openButton: document.getElementById('sbAuthAction') || document.getElementById('openAuth'),
   closeButton: document.getElementById('authClose'),
   logoutButton: document.getElementById('logoutBtn'),
-  status: document.getElementById('authStatus'),
   form: document.getElementById('authForm'),
   email: document.getElementById('authEmail'),
   password: document.getElementById('authPass'),
   mode: document.getElementById('authMode'),
   google: document.getElementById('loginGoogle'),
 };
-
-/*function setStatus(message) {
-  if (dom.status) dom.status.textContent = message ?? '';
-}*/
 
 export function toggleAuth(show) {
   if (!dom.modal) return;
@@ -57,21 +52,19 @@ function disableAuthControls(disabled) {
     if ('disabled' in el) el.disabled = disabled;
   });
   if (disabled) {
-    dom.email && (dom.email.placeholder = 'Не доступно (оффлайн)');
-    dom.password && (dom.password.placeholder = 'Не доступно (оффлайн)');
+    if (dom.email) dom.email.placeholder = 'Не доступно (оффлайн)';
+    if (dom.password) dom.password.placeholder = 'Не доступно (оффлайн)';
   }
 }
 
 async function handleLogout() {
-  setStatus('Выход…');
   try {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
-    setStatus('Вышли из аккаунта');
+    alert('Вы вышли из аккаунта');
   } catch (err) {
     console.error(err);
     alert(err?.message || 'Sign out error');
-    setStatus('Ошибка выхода');
   }
 }
 
@@ -87,27 +80,22 @@ function bindOnline() {
 
     try {
       if (dom.mode?.value === 'signup') {
-        setStatus('Регистрирую…');
         const { error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
-        setStatus('Регистрация завершена. Проверьте почту.');
+        alert('Регистрация завершена. Проверьте почту.');
       } else {
-        setStatus('Вход…');
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        setStatus('Готово!');
         toggleAuth(false);
       }
     } catch (err) {
       console.error(err);
       alert(err?.message || 'Auth error');
-      setStatus(`Ошибка: ${err?.message || ''}`);
     }
   });
 
   dom.google?.addEventListener('click', async () => {
     try {
-      setStatus('Переход в Google…');
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -119,7 +107,6 @@ function bindOnline() {
     } catch (err) {
       console.error(err);
       alert(err?.message || 'Google OAuth error');
-      setStatus('Ошибка Google OAuth');
     }
   });
 }
@@ -140,7 +127,6 @@ export async function initAuth() {
 
   disableAuthControls(false);
   bindOnline();
-  setStatus('Проверяю сессию…');
 
   try {
     const { data, error } = await supabase.auth.getUser();
@@ -149,7 +135,6 @@ export async function initAuth() {
     updateUI();
   } catch (err) {
     console.error('[auth] init failed:', err);
-    setStatus('Ошибка инициализации авторизации');
   }
 
   try {
