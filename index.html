@@ -14,8 +14,6 @@
       <header class="topbar">
         <div class="brand">PØMO</div>
         <div class="actions">
-          <button id="openAuth" class="icon-btn" type="button" aria-label="Войти">🔐</button>
-          <div id="authStatus" class="auth-status"></div>
           <button
             id="themeToggle"
             class="icon-btn"
@@ -196,10 +194,12 @@
         >
           <div class="list scroll" id="listPlans"></div>
         </section>
-
-        <div class="sb__spacer"></div>
-        <div class="sb__footer"></div>
       </div>
+
+      <!-- ЕДИНСТВЕННЫЙ футер сайдбара — ВСЕГДА внизу -->
+      <footer class="sb__footer">
+        <button id="sbAuthAction" class="btn auth-cta" type="button">🔐 Войти в систему</button>
+      </footer>
     </aside>
 
     <!-- AUTH MODAL -->

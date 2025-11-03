@@ -221,6 +221,48 @@ body.day[data-pomo-mode='pause'] .readout .phase {
   height: 0;
 }
 
+.sb {
+  position: fixed;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  height: 100svh;
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+}
+
+/* Внутри скроллим только контент, футер остаётся снизу */
+.sb__inner {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* Футер: у самого низа, не прокручивается вместе с контентом */
+.sb__footer {
+  flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  padding: 16px;
+  background: inherit;
+  backdrop-filter: inherit;
+  border-top: 1px solid color-mix(in srgb, var(--ink-inv, #fff) 10%, transparent);
+}
+body.day .sb__footer {
+  border-top-color: color-mix(in srgb, var(--ink, #000) 12%, transparent);
+}
+
+/* Кнопка авторизации на всю ширину */
+.btn.auth-cta {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-weight: 700;
+}
+
 @media (max-width: 720px) {
   .topbar {
     position: fixed;
@@ -244,5 +286,8 @@ body.day[data-pomo-mode='pause'] .readout .phase {
   }
   .icon-btn {
     border-radius: 14px;
+  }
+  .sb__footer {
+    padding: 12px;
   }
 }

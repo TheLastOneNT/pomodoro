@@ -11,7 +11,7 @@ const ONCE_FLAG = '__auth_bound_once__';
 
 const dom = {
   modal: document.getElementById('authModal'),
-  openButton: document.getElementById('openAuth'),
+  openButton: document.getElementById('sbAuthAction') || document.getElementById('openAuth'),
   closeButton: document.getElementById('authClose'),
   logoutButton: document.getElementById('logoutBtn'),
   status: document.getElementById('authStatus'),
@@ -22,9 +22,9 @@ const dom = {
   google: document.getElementById('loginGoogle'),
 };
 
-function setStatus(message) {
+/*function setStatus(message) {
   if (dom.status) dom.status.textContent = message ?? '';
-}
+}*/
 
 export function toggleAuth(show) {
   if (!dom.modal) return;
@@ -33,20 +33,13 @@ export function toggleAuth(show) {
 }
 
 function updateTriggerIcon() {
-  const email = STATE.user?.email || STATE.user?.user_metadata?.email;
-  if (dom.openButton) {
-    dom.openButton.textContent = email ? '👤' : '🔐';
-    dom.openButton.setAttribute('title', email ? 'Аккаунт' : 'Войти');
-  }
+  if (!dom.openButton) return;
+  const logged = Boolean(STATE.user);
+  dom.openButton.textContent = logged ? '👤 Вы в системе' : '🔐 Войти в систему';
+  dom.openButton.setAttribute('aria-label', logged ? 'Аккаунт' : 'Войти');
 }
 
 function updateUI() {
-  const email = STATE.user?.email || STATE.user?.user_metadata?.email;
-  if (email) {
-    setStatus(`В системе: ${email}`);
-  } else {
-    setStatus(SUPA_ENABLED_FLAG ? 'Не вошли' : 'Оффлайн: авторизация недоступна');
-  }
   updateTriggerIcon();
   document.dispatchEvent(new CustomEvent('auth:change', { detail: STATE.user }));
 }
@@ -54,7 +47,6 @@ function updateUI() {
 function bindCommon() {
   if (window[ONCE_FLAG]) return;
   window[ONCE_FLAG] = true;
-
   dom.openButton?.addEventListener('click', () => toggleAuth(true));
   dom.closeButton?.addEventListener('click', () => toggleAuth(false));
 }
