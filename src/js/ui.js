@@ -73,19 +73,25 @@ function setBodyTheme() {
   document.body.classList.toggle('night', !isDay);
 }
 
-function setTomatoModeClasses() {
-  if (!dom.tomatoBtn) return;
-  dom.tomatoBtn.classList.remove('mode-idle', 'mode-focus', 'mode-break');
+function currentTomatoMode() {
+  if (state.phase === 'idle') return 'mode-idle';
+  if (!state.running) return 'mode-pause';
+  return state.phase === 'focus' ? 'mode-focus' : 'mode-break';
+}
 
-  // состояния нужны для стилизации (свечение/тени и т.д.)
-  if (!state.running) {
-    dom.tomatoBtn.classList.add('mode-idle');
-  } else {
-    dom.tomatoBtn.classList.add(state.phase === 'focus' ? 'mode-focus' : 'mode-break');
+function setTomatoModeClasses() {
+  const modeClass = currentTomatoMode();
+
+  if (dom.tomatoBtn) {
+    dom.tomatoBtn.classList.remove('mode-idle', 'mode-focus', 'mode-break', 'mode-pause');
+    dom.tomatoBtn.classList.add(modeClass);
+    dom.tomatoBtn.setAttribute('aria-pressed', String(!!state.running));
   }
 
-  // корректная доступность
-  dom.tomatoBtn.setAttribute('aria-pressed', String(!!state.running));
+  const modeName = modeClass.replace('mode-', '');
+  if (typeof document !== 'undefined' && document.body) {
+    document.body.dataset.pomoMode = modeName;
+  }
 }
 
 function setProgress() {
