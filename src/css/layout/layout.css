@@ -35,14 +35,6 @@ body.day .topbar {
   -webkit-background-clip: text;
 }
 
-.brand::before {
-  content: '◎';
-  font-size: 1.15em;
-  letter-spacing: 0;
-  color: var(--accent-idle);
-  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--accent-idle) 60%, transparent));
-}
-
 body.day .brand {
   background: linear-gradient(120deg, var(--accent-focus), var(--accent-break));
 }
