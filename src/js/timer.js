@@ -1,64 +1,205 @@
-import { state } from "./state.js";
+// timer.js — точный помодоро-таймер с коррекцией дрейфа и тем же публичным API
+import { state } from './state.js';
 
-let endAt = null; // дедлайн в мс
-let acc = 0; // учёт минут фокуса
+/**
+ * Внутренние поля модуля (не в state, чтобы не сериализовать это в LS)
+ */
+let endAtMs = null; // дедлайн текущей фазы (timestamp, ms)
+let tickHandle = null; // id setTimeout (используем setTimeout вместо setInterval)
+let focusSecAcc = 0; // аккумулятор пройденных секунд фокуса для события "focus:minute"
+let lastTickMs = 0; // для подсчёта delta, чтобы корректно переживать лаги/спящие вкладки
 
-function nowMs() {
-  return Date.now();
+/** Утилиты */
+const nowMs = () => Date.now();
+const secToMs = (s) => s * 1000;
+const clampPosInt = (n, min) => Math.max(min, n | 0);
+
+function scheduleNextTick() {
+  // Планируем следующий тик на границу секунды, чтобы секунды "щелкали" ровно.
+  const ms = nowMs();
+  const remainder = ms % 1000;
+  const delay = Math.max(50, 1000 - remainder); // >=50ms, чтобы не ставить слишком короткие таймауты
+  tickHandle = setTimeout(tick, delay);
 }
+
+function clearTick() {
+  if (tickHandle) {
+    clearTimeout(tickHandle);
+    tickHandle = null;
+  }
+}
+
+/** Переустановка дедлайна в зависимости от секунд */
 function setEndFromSeconds(seconds) {
-  endAt = nowMs() + seconds * 1000;
+  endAtMs = nowMs() + secToMs(seconds);
 }
+
+/** Плавный пересчёт оставшегося времени от дедлайна */
+function recomputeRemainingFromDeadline() {
+  if (!endAtMs) return;
+  const leftMs = Math.max(0, endAtMs - nowMs());
+  state.remaining = Math.round(leftMs / 1000);
+}
+
+/** Переход фазы */
+function phaseEnd(skipped = false) {
+  const prevPhase = state.phase;
+  const finishedFocus = prevPhase === 'focus';
+
+  // Следующая фаза
+  const nextPhase = prevPhase === 'focus' ? 'break' : 'focus';
+  state.phase = nextPhase;
+
+  // Устанавливаем новую длительность/дедлайн
+  const nextSec = nextPhase === 'focus' ? state.durations.focusSec : state.durations.breakSec;
+  state.remaining = nextSec;
+  setEndFromSeconds(nextSec);
+
+  // Учет цикла: считаем "цикл" как завершение периода фокуса (если не skip)
+  if (finishedFocus && !skipped) {
+    state.cyclesDone += 1;
+
+    if (state.cyclesTarget && state.cyclesDone >= state.cyclesTarget) {
+      // План завершён
+      state.running = false;
+      state.phase = 'idle';
+      state.remaining = state.durations.focusSec;
+      endAtMs = null;
+      clearTick();
+
+      document.dispatchEvent(
+        new CustomEvent('plan:done', { detail: { cyclesDone: state.cyclesDone } })
+      );
+      return;
+    }
+  }
+
+  // Событие смены фазы
+  document.dispatchEvent(
+    new CustomEvent('timer:phase', { detail: { from: prevPhase, to: nextPhase, skipped } })
+  );
+
+  // Если авто-режим выключен — останавливаемся на границе фаз
+  if (!state.auto) {
+    pause();
+    return;
+  }
+
+  // Если авто включён — продолжаем тики
+  if (state.running) {
+    scheduleNextTick();
+  }
+}
+
+/** Основной тик */
+function tick() {
+  tickHandle = null;
+
+  // Если нас остановили — не продолжаем
+  if (!state.running) return;
+
+  // Корректно пересчитываем оставшиеся секунды от дедлайна
+  recomputeRemainingFromDeadline();
+
+  const now = nowMs();
+  const deltaSec = Math.max(1, Math.round((now - lastTickMs) / 1000)); // >=1 сек
+  lastTickMs = now;
+
+  // Минутная телеметрия только в фазе фокуса
+  if (state.phase === 'focus') {
+    focusSecAcc += deltaSec;
+    if (focusSecAcc >= 60) {
+      const minutes = Math.floor(focusSecAcc / 60);
+      focusSecAcc = focusSecAcc % 60;
+      document.dispatchEvent(new CustomEvent('focus:minute', { detail: minutes }));
+    }
+  } else {
+    focusSecAcc = 0;
+  }
+
+  // Завершение фазы
+  if (state.remaining <= 0) {
+    phaseEnd(false);
+    return;
+  }
+
+  // Планируем следующий тик
+  scheduleNextTick();
+}
+
+/* =========================
+   Публичный API (без изменений)
+   ========================= */
 
 export function start() {
   if (state.running) return;
 
-  if (state.phase === "idle") {
-    state.phase = "focus";
+  // Если таймер стоял в idle — начинаем с фокуса
+  if (state.phase === 'idle') {
+    state.phase = 'focus';
     state.remaining = state.durations.focusSec;
   }
 
-  if (!endAt) setEndFromSeconds(state.remaining);
+  // Если дедлайн не выставлен — выставляем от текущего remaining
+  if (!endAtMs) setEndFromSeconds(state.remaining);
+
   state.running = true;
-  if (!state.intervalId) state.intervalId = setInterval(tick, 1000);
+  lastTickMs = nowMs();
+  clearTick();
+  scheduleNextTick();
 }
 
 export function pause() {
-  if (endAt) {
-    const leftMs = Math.max(0, endAt - nowMs());
-    state.remaining = Math.round(leftMs / 1000);
-  }
-  endAt = null;
+  // Пересчитать оставшееся по дедлайну, очистить дедлайн
+  recomputeRemainingFromDeadline();
+  endAtMs = null;
   state.running = false;
+  clearTick();
 }
 
 export function reset() {
+  clearTick();
   state.running = false;
-  state.phase = "idle";
+  state.phase = 'idle';
   state.remaining = state.durations.focusSec;
   state.cyclesDone = 0;
-  endAt = null;
+  endAtMs = null;
+  focusSecAcc = 0;
 }
 
 /** Установка пресета (минуты) */
 export function setPreset(focusMin, breakMin) {
-  state.durations.focusSec = Math.max(60, (focusMin | 0) * 60);
-  state.durations.breakSec = Math.max(60, (breakMin | 0) * 60);
+  state.durations.focusSec = clampPosInt((focusMin | 0) * 60, 60);
+  state.durations.breakSec = clampPosInt((breakMin | 0) * 60, 60);
 
-  if (state.phase === "idle") {
+  if (state.phase === 'idle') {
+    // при простое просто меняем "начальное" значение
     state.remaining = state.durations.focusSec;
-    endAt = null;
-  } else if (state.running && endAt) {
-    const secs =
-      state.phase === "focus"
-        ? state.durations.focusSec
-        : state.durations.breakSec;
+    endAtMs = null;
+    return;
+  }
+
+  // Если идёт какой-то режим — обновим дедлайн под новую длительность текущей фазы
+  if (state.running) {
+    const secs = state.phase === 'focus' ? state.durations.focusSec : state.durations.breakSec;
     setEndFromSeconds(secs);
+  } else {
+    // на паузе — пересчёт remaining для текущей фазы
+    state.remaining = state.phase === 'focus' ? state.durations.focusSec : state.durations.breakSec;
+    endAtMs = null;
   }
 }
 
 export function setAuto(v) {
   state.auto = !!v;
+}
+
+export function toggleAuto() {
+  state.auto = !state.auto;
+}
+
+export function setTheme(mode) {
+  state.theme = mode;
 }
 
 export function setCycles(n) {
@@ -67,77 +208,10 @@ export function setCycles(n) {
   state.cyclesDone = 0;
 }
 
-export function toggleAuto() {
-  state.auto = !state.auto;
-}
-export function setTheme(mode) {
-  state.theme = mode;
-}
-
-/** Пропуск текущей фазы */
+/** Пропуск текущей фазы (моментально) */
 export function skip() {
-  if (state.phase === "idle") return;
+  if (state.phase === 'idle') return;
+  // Сбрасываем remaining и переходим к phaseEnd как к естественному завершению
   state.remaining = 0;
   phaseEnd(true);
-}
-
-// ---------------- internal ----------------
-function tick() {
-  if (!state.running) return;
-
-  if (endAt) {
-    const leftMs = Math.max(0, endAt - nowMs());
-    state.remaining = Math.round(leftMs / 1000);
-  }
-
-  if (state.phase === "focus") {
-    acc += 1;
-    if (acc >= 60) {
-      acc = 0;
-      document.dispatchEvent(new CustomEvent("focus:minute", { detail: 1 }));
-    }
-  } else {
-    acc = 0;
-  }
-
-  if (state.remaining <= 0) phaseEnd(false);
-}
-
-function phaseEnd(skipped = false) {
-  const was = state.phase;
-  const finishedFocus = was === "focus";
-
-  const next = was === "focus" ? "break" : "focus";
-  state.phase = next;
-  state.remaining =
-    next === "focus" ? state.durations.focusSec : state.durations.breakSec;
-  setEndFromSeconds(state.remaining);
-
-  if (finishedFocus && !skipped) {
-    state.cyclesDone += 1;
-    if (state.cyclesTarget && state.cyclesDone >= state.cyclesTarget) {
-      state.running = false;
-      state.phase = "idle";
-      state.remaining = state.durations.focusSec;
-      endAt = null;
-      document.dispatchEvent(
-        new CustomEvent("plan:done", {
-          detail: { cyclesDone: state.cyclesDone },
-        })
-      );
-      return;
-    }
-  }
-
-  // событие смены фазы — для UI/уведомлений/звуков
-  document.dispatchEvent(
-    new CustomEvent("timer:phase", {
-      detail: { from: was, to: next, skipped },
-    })
-  );
-
-  // если авто-режим выключен — ставим на паузу на границе фаз
-  if (!state.auto) {
-    pause();
-  }
 }

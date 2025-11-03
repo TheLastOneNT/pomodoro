@@ -8,30 +8,29 @@ import { save, load } from './storage.js';
 const THEME_STORAGE_KEY = 'pomodoro:theme';
 
 // ---------- utils ----------
-const qs = (selector) => document.querySelector(selector);
-const getById = (id) => document.getElementById(id);
-const attach = (node, event, handler, options) => node?.addEventListener(event, handler, options);
-const toInt = (value, fallback = 0) => {
-  const parsed = parseInt(value, 10);
-  return Number.isFinite(parsed) ? parsed : fallback;
+const qs = (s) => document.querySelector(s);
+const byId = (id) => document.getElementById(id);
+const on = (el, ev, fn, opts) => el && el.addEventListener(ev, fn, opts);
+const toInt = (v, fb = 0) => {
+  const n = parseInt(v, 10);
+  return Number.isFinite(n) ? n : fb;
 };
+const snapshotState = () => ({
+  phase: state.phase,
+  running: state.running,
+  durations: state.durations,
+  remaining: state.remaining,
+  auto: state.auto,
+  sound: state.sound,
+  theme: state.theme,
+});
 
-function snapshotState() {
-  return {
-    phase: state.phase,
-    running: state.running,
-    durations: state.durations,
-    remaining: state.remaining,
-    auto: state.auto,
-    sound: state.sound,
-    theme: state.theme,
-  };
-}
-
-// ---------- elements ----------
+// ---------- DOM ----------
 const dom = {
-  tomatoButton: getById('tomatoBtn'),
-  themeToggle: getById('themeToggle'),
+  tomatoBtn: byId('tomatoBtn'),
+  themeToggle: byId('themeToggle'),
+
+  // устаревшие/вспомогательные контролы (могут отсутствовать)
   legacy: {
     preset: qs('#preset'),
     customRow: qs('#customRow'),
@@ -42,171 +41,178 @@ const dom = {
     soundToggle: qs('#soundToggle'),
     resetButton: qs('#resetBtn'),
   },
+
+  // актуальные тумблеры в сайдбаре «Настроить»
   builder: {
-    autoToggle: getById('bAuto'),
-    soundToggle: getById('bSound'),
+    autoToggle: byId('bAuto'),
+    soundToggle: byId('bSound'),
   },
 };
 
 function syncOptionToggles() {
   const { legacy, builder } = dom;
-  if (legacy.autoToggle) legacy.autoToggle.checked = !!state.auto;
-  if (legacy.soundToggle) legacy.soundToggle.checked = !!state.sound;
-  if (builder.autoToggle) builder.autoToggle.checked = !!state.auto;
-  if (builder.soundToggle) builder.soundToggle.checked = !!state.sound;
+  const a = !!state.auto;
+  const s = !!state.sound;
+  if (legacy.autoToggle) legacy.autoToggle.checked = a;
+  if (legacy.soundToggle) legacy.soundToggle.checked = s;
+  if (builder.autoToggle) builder.autoToggle.checked = a;
+  if (builder.soundToggle) builder.soundToggle.checked = s;
 }
 
-// ---------- restore ----------
-const restoredState = load();
-if (restoredState) Object.assign(state, restoredState);
-if (state.phase === 'idle') {
-  state.remaining = state.durations.focusSec;
+// ---------- persist ----------
+let lastPersisted = '';
+function persistState(force = false) {
+  // тема дублируется в localStorage — это ок: быстрое применение при старте
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, state.theme);
+  } catch {}
+
+  const snap = snapshotState();
+  const str = JSON.stringify(snap);
+  if (!force && str === lastPersisted) return;
+  save(snap);
+  lastPersisted = str;
 }
-syncOptionToggles();
 
 // ---------- theme (единая точка правды) ----------
 const theme = {
   applyClasses() {
-    document.body.classList.toggle('day', state.theme === 'day');
-    document.body.classList.toggle('night', state.theme !== 'day');
+    const isDay = state.theme === 'day';
+    document.body.classList.toggle('day', isDay);
+    document.body.classList.toggle('night', !isDay);
   },
-
   renderToggle() {
-    const toggle = dom.themeToggle;
-    if (!toggle) return;
-
+    const t = dom.themeToggle;
+    if (!t) return;
     const isDay = state.theme === 'day';
     const icon = isDay ? '🌞' : '🌙';
     const label = isDay ? 'Сменить на тёмную тему' : 'Сменить на светлую тему';
-
-    toggle.textContent = icon;
-    toggle.setAttribute('aria-label', label);
-    toggle.setAttribute('title', label);
+    t.textContent = icon;
+    t.setAttribute('aria-label', label);
+    t.setAttribute('title', label);
   },
-
   set(mode) {
     state.theme = mode === 'day' ? 'day' : 'night';
-    try {
-      localStorage.setItem(THEME_STORAGE_KEY, state.theme);
-    } catch {}
-
     this.applyClasses();
     this.renderToggle();
-
     document.dispatchEvent(
       new CustomEvent('theme:changed', { detail: { night: state.theme !== 'day' } })
     );
-
     sync();
-    persistState();
+    persistState(true);
   },
-
   init() {
-    let initialTheme = null;
+    // приоритет: localStorage -> класс body -> дефолт night
+    let initial = 'night';
     try {
-      initialTheme = localStorage.getItem(THEME_STORAGE_KEY);
-    } catch {}
-
-    if (initialTheme !== 'day' && initialTheme !== 'night') {
-      initialTheme = document.body.classList.contains('day') ? 'day' : 'night';
+      const stored = localStorage.getItem(THEME_STORAGE_KEY);
+      if (stored === 'day' || stored === 'night') initial = stored;
+      else initial = document.body.classList.contains('day') ? 'day' : 'night';
+    } catch {
+      initial = document.body.classList.contains('day') ? 'day' : 'night';
     }
-
-    this.set(initialTheme);
+    this.set(initial);
   },
 };
 
-// ---------- persist ----------
-let lastPersistedSnapshot = '';
-function persistState(force = false) {
-  const snapshot = snapshotState();
-  const serialized = JSON.stringify(snapshot);
-  if (!force && serialized === lastPersistedSnapshot) return;
+// ---------- restore ----------
+(function restore() {
+  const restored = load();
+  if (restored && typeof restored === 'object') {
+    Object.assign(state, restored);
+  }
+  if (state.phase === 'idle') {
+    state.remaining = state.durations.focusSec;
+  }
+  syncOptionToggles();
+})();
 
-  save(snapshot);
-  lastPersistedSnapshot = serialized;
-}
-
-// ---------- heartbeat ----------
+// ---------- heartbeat (1 шт. на приложение) ----------
+let hbId = null;
 function heartbeat() {
   sync();
   persistState();
 }
-
-setInterval(heartbeat, 1000);
+function startHeartbeat() {
+  if (hbId) return;
+  hbId = setInterval(heartbeat, 1000);
+}
+function stopHeartbeat() {
+  if (!hbId) return;
+  clearInterval(hbId);
+  hbId = null;
+}
+// экономия батареи при скрытии вкладки
+on(document, 'visibilitychange', () => {
+  if (document.hidden) stopHeartbeat();
+  else startHeartbeat();
+});
 
 // ---------- interactions ----------
-attach(dom.tomatoButton, 'click', () => {
+on(dom.tomatoBtn, 'click', () => {
   if (state.running) {
     timer.pause();
   } else {
     timer.start();
-    if (state.sound) {
-      playStart();
-    }
+    if (state.sound) playStart();
   }
-
   sync();
   persistState();
 });
 
-attach(dom.themeToggle, 'click', () => {
+on(dom.themeToggle, 'click', () => {
   theme.set(state.theme === 'day' ? 'night' : 'day');
 });
 
-// ---------- (опционально) старые inline-настройки ----------
-function applyPreset(focusMinutes, breakMinutes) {
+// --- устаревшие/вспомогательные контролы (если они на странице) ---
+const legacy = dom.legacy;
+
+function applyPreset(focusMin, breakMin) {
   timer.reset();
-  timer.setPreset(focusMinutes, breakMinutes);
+  timer.setPreset(focusMin, breakMin);
   sync();
   persistState();
 }
 
-const legacy = dom.legacy;
-
-attach(legacy.preset, 'change', () => {
+on(legacy.preset, 'change', () => {
   if (!legacy.preset) return;
-
   legacy.customRow?.classList.toggle('hidden', legacy.preset.value !== 'custom');
   if (legacy.preset.value === 'custom') return;
-
-  const [focusMinutes, breakMinutes] = legacy.preset.value
-    .split('-')
-    .map((value) => toInt(value, 1));
-
-  applyPreset(focusMinutes, breakMinutes);
+  const [f, b] = legacy.preset.value.split('-').map((v) => toInt(v, 1));
+  applyPreset(f, b);
 });
 
-attach(legacy.applyCustom, 'click', () => {
-  const focusMinutes = Math.max(1, toInt(legacy.focus?.value, 25));
-  const breakMinutes = Math.max(1, toInt(legacy.break?.value, 5));
-
-  applyPreset(focusMinutes, breakMinutes);
+on(legacy.applyCustom, 'click', () => {
+  const f = Math.max(1, toInt(legacy.focus?.value, 25));
+  const b = Math.max(1, toInt(legacy.break?.value, 5));
+  applyPreset(f, b);
 });
 
-attach(legacy.autoToggle, 'change', () => {
-  const nextValue = !!legacy.autoToggle?.checked;
-  if (typeof timer.setAuto === 'function') {
-    timer.setAuto(nextValue);
-  }
-  state.auto = nextValue;
+on(legacy.autoToggle, 'change', () => {
+  const next = !!legacy.autoToggle?.checked;
+  if (typeof timer.setAuto === 'function') timer.setAuto(next);
+  state.auto = next;
   syncOptionToggles();
   sync();
   persistState();
 });
 
-attach(legacy.soundToggle, 'change', () => {
+on(legacy.soundToggle, 'change', () => {
   state.sound = !!legacy.soundToggle?.checked;
   syncOptionToggles();
   sync();
   persistState();
 });
 
-attach(legacy.resetButton, 'click', () => {
+on(legacy.resetButton, 'click', () => {
   timer.reset();
   sync();
-  persistState();
+  persistState(true);
 });
 
 // ---------- init ----------
 theme.init();
-heartbeat();
+startHeartbeat();
+
+// гарантированная запись перед выгрузкой
+on(window, 'beforeunload', () => persistState(true));

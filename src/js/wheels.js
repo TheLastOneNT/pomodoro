@@ -1,36 +1,70 @@
-// Кастомные числовые пикеры с кнопками вверх/вниз
+// wheels.js — кастомные числовые пикеры с кнопками ↑/↓ и акселерацией удержания
+// Совместимо с существующей разметкой .wheel[data-key][data-min][data-max][data-step][data-value]
+
 export function initWheels() {
+  // --- мост к реальным hidden/number инпутам в сайдбаре ---
   const inputBridge = {
     focus: document.getElementById('bFocus'),
     break: document.getElementById('bBreak'),
     cycles: document.getElementById('bCycles'),
   };
 
+  // чтобы колёса подхватывали внешние изменения (например, из кода)
+  const bridgeListeners = [];
+  const onBridgeChange = (key, handler) => {
+    const el = inputBridge[key];
+    if (!el) return;
+    const fn = () => handler(el.value);
+    el.addEventListener('input', fn);
+    el.addEventListener('change', fn);
+    bridgeListeners.push(() => {
+      el.removeEventListener('input', fn);
+      el.removeEventListener('change', fn);
+    });
+  };
+
+  const clamp = (val, min, max) => Math.max(min, Math.min(max, val));
+  const toInt = (v, fb = 0) => {
+    const n = parseInt(v, 10);
+    return Number.isFinite(n) ? n : fb;
+  };
+
+  const labelFrom = (el) => {
+    if (el.dataset.label) return el.dataset.label;
+    if (el.getAttribute('aria-label')) return el.getAttribute('aria-label');
+    const n = el.closest('.wheel-wrap')?.querySelector('.wheel-label');
+    return n ? n.textContent.trim() : 'значение';
+  };
+
+  const valuedText = (key, v) => {
+    // Чуть осмысленнее aria-valuetext
+    if (key === 'cycles') return `${v} циклов`;
+    return `${v} минут`;
+  };
+
   const updateInput = (key, value) => {
     const input = inputBridge[key];
     if (!input) return;
     input.value = String(value);
+    // отдаём событие наверх (sidebar.js слушает input/change)
     input.dispatchEvent(new Event('input', { bubbles: true }));
     input.dispatchEvent(new Event('change', { bubbles: true }));
   };
 
-  const clamp = (val, min, max) => Math.max(min, Math.min(max, val));
-
-  const getLabel = (element) => {
-    if (element.dataset.label) return element.dataset.label;
-    if (element.getAttribute('aria-label')) return element.getAttribute('aria-label');
-    const labelNode = element.closest('.wheel-wrap')?.querySelector('.wheel-label');
-    return labelNode ? labelNode.textContent.trim() : 'значение';
-  };
-
+  // --- инициализация одного пикера ---
   const initPicker = (element) => {
-    const min = parseInt(element.dataset.min || '0', 10);
-    const max = parseInt(element.dataset.max || '0', 10);
-    const step = parseInt(element.dataset.step || '1', 10);
-    const key = element.dataset.key;
-    let currentValue = clamp(parseInt(element.dataset.value || String(min), 10), min, max);
-    const label = getLabel(element);
+    // защита от двойной инициализации
+    if (element.__wheelInited) return null;
+    element.__wheelInited = true;
 
+    const key = element.dataset.key || '';
+    const min = toInt(element.dataset.min, 0);
+    const max = toInt(element.dataset.max, 0);
+    const stepBase = Math.max(1, toInt(element.dataset.step, 1));
+    let currentValue = clamp(toInt(element.dataset.value, min), min, max);
+    const label = labelFrom(element);
+
+    // Разметка
     element.innerHTML = '';
     element.setAttribute('role', 'spinbutton');
     element.setAttribute('aria-valuemin', String(min));
@@ -38,31 +72,25 @@ export function initWheels() {
     element.setAttribute('aria-label', label);
     element.tabIndex = -1;
 
-    const createArrow = (direction) => {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = `wheel-arrow wheel-arrow--${direction}`;
-      button.setAttribute(
+    const mkArrow = (dir) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = `wheel-arrow wheel-arrow--${dir}`;
+      btn.setAttribute(
         'aria-label',
-        `${direction === 'up' ? 'Увеличить' : 'Уменьшить'} ${label.toLowerCase()}`
+        `${dir === 'up' ? 'Увеличить' : 'Уменьшить'} ${label.toLowerCase()}`
       );
-      const points = direction === 'up' ? '6 15 12 9 18 15' : '6 9 12 15 18 9';
-      button.innerHTML = `
+      const pts = dir === 'up' ? '6 15 12 9 18 15' : '6 9 12 15 18 9';
+      btn.innerHTML = `
         <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
-          <polyline
-            points="${points}"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
-      `;
-      return button;
+          <polyline points="${pts}" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>`;
+      return btn;
     };
 
-    const upBtn = createArrow('up');
+    const upBtn = mkArrow('up');
+    const downBtn = mkArrow('down');
 
     const valueEl = document.createElement('input');
     valueEl.type = 'text';
@@ -74,24 +102,26 @@ export function initWheels() {
     valueEl.setAttribute('aria-label', label);
     valueEl.setAttribute('maxlength', String(max).length);
 
-    const downBtn = createArrow('down');
-
     element.append(upBtn, valueEl, downBtn);
 
+    // --- служебки для очистки ---
     const cleanup = [];
-    const addListener = (target, event, handler, options) => {
-      target.addEventListener(event, handler, options);
-      cleanup.push(() => target.removeEventListener(event, handler, options));
+    const on = (t, ev, h, opt) => {
+      t.addEventListener(ev, h, opt);
+      cleanup.push(() => t.removeEventListener(ev, h, opt));
     };
 
+    // --- применение значения ---
     const applyValue = (value, { force = false, emit = true } = {}) => {
-      const next = clamp(value, min, max);
+      const next = clamp(toInt(value, currentValue), min, max);
       if (!force && next === currentValue) return;
       currentValue = next;
+
       element.dataset.value = String(currentValue);
       element.setAttribute('aria-valuenow', String(currentValue));
-      element.setAttribute('aria-valuetext', String(currentValue));
+      element.setAttribute('aria-valuetext', valuedText(key, currentValue));
       valueEl.value = String(currentValue);
+
       if (emit) updateInput(key, currentValue);
     };
 
@@ -100,160 +130,205 @@ export function initWheels() {
       applyValue(currentValue + delta);
     };
 
-    const setupHold = (button, delta) => {
+    // --- удержание (акселерация) ---
+    const setupHold = (btn, dirStep) => {
       let skipNextClick = false;
-      let holdTimeout = null;
-      let holdInterval = null;
+      let tHold = null;
+      let tRep = null;
+      let repCount = 0;
 
       const clearTimers = () => {
-        if (holdTimeout) {
-          clearTimeout(holdTimeout);
-          holdTimeout = null;
-        }
-        if (holdInterval) {
-          clearInterval(holdInterval);
-          holdInterval = null;
-        }
+        if (tHold) (clearTimeout(tHold), (tHold = null));
+        if (tRep) (clearInterval(tRep), (tRep = null));
+      };
+
+      const accelTick = () => {
+        // каждые ~10 тиков увеличиваем шаг и ускоряем интервал
+        repCount += 1;
+        const mult = repCount >= 30 ? 10 : repCount >= 15 ? 5 : repCount >= 7 ? 2 : 1;
+        changeBy(dirStep * mult);
+      };
+
+      const startRepeat = () => {
+        // начальный интервал
+        let interval = 120;
+        tRep = setInterval(accelTick, interval);
+
+        // постепенное ускорение
+        const speedUp = () => {
+          if (!tRep) return;
+          clearInterval(tRep);
+          interval = Math.max(40, interval - 20);
+          tRep = setInterval(accelTick, interval);
+        };
+        // ускоряем каждые 500 мс
+        const booster = setInterval(speedUp, 500);
+        cleanup.push(() => clearInterval(booster));
       };
 
       const stop = () => {
         clearTimers();
+        repCount = 0;
         setTimeout(() => {
           skipNextClick = false;
         }, 0);
       };
 
-      addListener(button, 'pointerdown', (event) => {
+      on(btn, 'pointerdown', (e) => {
         skipNextClick = true;
-        event.preventDefault();
+        e.preventDefault();
         try {
-          button.setPointerCapture(event.pointerId);
+          btn.setPointerCapture(e.pointerId);
         } catch {}
-        changeBy(delta);
+        // мгновенный шаг
+        changeBy(dirStep);
         clearTimers();
-        holdTimeout = window.setTimeout(() => {
-          holdInterval = window.setInterval(() => changeBy(delta), 80);
-        }, 350);
+        tHold = setTimeout(startRepeat, 350);
       });
 
-      ['pointerup', 'pointerleave', 'pointercancel', 'lostpointercapture'].forEach((eventName) =>
-        addListener(button, eventName, stop)
+      ['pointerup', 'pointerleave', 'pointercancel', 'lostpointercapture'].forEach((ev) =>
+        on(btn, ev, stop)
       );
 
-      addListener(button, 'click', (event) => {
+      on(btn, 'click', (e) => {
         if (skipNextClick) {
-          event.preventDefault();
+          e.preventDefault();
           skipNextClick = false;
           return;
         }
-        changeBy(delta);
+        changeBy(dirStep);
       });
 
-      addListener(button, 'keydown', (event) => {
-        if (event.key === ' ' || event.key === 'Enter') {
+      on(btn, 'keydown', (e) => {
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault();
           skipNextClick = true;
-          event.preventDefault();
-          changeBy(delta);
+          changeBy(dirStep);
         }
       });
 
       cleanup.push(() => clearTimers());
     };
 
-    setupHold(upBtn, step);
-    setupHold(downBtn, -step);
+    setupHold(upBtn, +stepBase);
+    setupHold(downBtn, -stepBase);
 
-    // Прокрутка колёсиком (вниз = уменьшаем)
-    addListener(
+    // --- колесо мыши ---
+    on(
       element,
       'wheel',
-      (event) => {
-        event.preventDefault();
-        const d = Math.sign(event.deltaY || event.detail || 0);
+      (e) => {
+        e.preventDefault();
+        const d = Math.sign(e.deltaY || e.detail || 0);
         if (!d) return;
-        changeBy(d > 0 ? -step : step);
+        changeBy(d > 0 ? -stepBase : stepBase);
       },
       { passive: false }
     );
 
-    // Клавиатура
-    const commitManualValue = () => {
+    // --- ручной ввод ---
+    const commitManual = () => {
       const digits = valueEl.value.replace(/\D+/g, '');
       valueEl.value = digits;
       if (!digits) {
         valueEl.value = String(currentValue);
         return;
       }
-      const parsed = parseInt(digits, 10);
-      if (Number.isNaN(parsed)) {
-        valueEl.value = String(currentValue);
-        return;
-      }
+      const parsed = toInt(digits, currentValue);
       applyValue(parsed, { force: true });
     };
 
-    addListener(valueEl, 'input', () => {
+    on(valueEl, 'input', () => {
       const digits = valueEl.value.replace(/\D+/g, '');
-      if (digits !== valueEl.value) {
-        valueEl.value = digits;
-      }
+      if (digits !== valueEl.value) valueEl.value = digits;
     });
+    on(valueEl, 'change', commitManual);
+    on(valueEl, 'blur', commitManual);
 
-    addListener(valueEl, 'change', commitManualValue);
-    addListener(valueEl, 'blur', commitManualValue);
-
-    addListener(valueEl, 'keydown', (event) => {
-      let delta = 0; // <-- объявляем локально
-
-      switch (event.key) {
+    // --- клавиатура ---
+    on(valueEl, 'keydown', (e) => {
+      // модификаторы шага
+      const mult = e.ctrlKey || e.metaKey ? 10 : e.shiftKey ? 5 : 1;
+      switch (e.key) {
         case 'ArrowUp':
-          delta = step;
+          e.preventDefault();
+          changeBy(stepBase * mult);
           break;
         case 'ArrowDown':
-          delta = -step;
+          e.preventDefault();
+          changeBy(-stepBase * mult);
           break;
         case 'PageUp':
-          delta = step * 5;
+          e.preventDefault();
+          changeBy(stepBase * 5 * mult);
           break;
         case 'PageDown':
-          delta = -step * 5;
+          e.preventDefault();
+          changeBy(-stepBase * 5 * mult);
           break;
         case 'Home':
-          applyValue(min);
-          event.preventDefault();
-          return;
+          e.preventDefault();
+          applyValue(min, { force: true });
+          break;
         case 'End':
-          applyValue(max);
-          event.preventDefault();
-          return;
+          e.preventDefault();
+          applyValue(max, { force: true });
+          break;
         case 'Enter':
-          event.preventDefault();
-          commitManualValue();
+          e.preventDefault();
+          commitManual();
           valueEl.select();
-          return;
+          break;
         default:
-          return; // другие клавиши игнорируем
+          // прочее — по умолчанию
+          break;
       }
-
-      event.preventDefault();
-      changeBy(delta);
     });
 
-    // Стартовое значение
+    // --- синк от внешнего инпута-моста ---
+    if (key === 'focus' || key === 'break' || key === 'cycles') {
+      onBridgeChange(key, (val) => {
+        const parsed = toInt(val, currentValue);
+        // подтягиваем без эмита в мост (во избежание цикла)
+        applyValue(parsed, { force: true, emit: false });
+      });
+    }
+
+    // старт
     applyValue(currentValue, { force: true, emit: true });
 
-    return () => {
-      cleanup.forEach((fn) => fn());
+    // публичные методы одного колеса
+    return {
+      refreshFromBridge() {
+        const v = toInt(inputBridge[key]?.value, currentValue);
+        applyValue(v, { force: true, emit: false });
+      },
+      destroy() {
+        cleanup.forEach((fn) => fn());
+        element.__wheelInited = false;
+      },
     };
   };
 
-  const destroyers = [];
-  document.querySelectorAll('.wheel').forEach((element) => {
-    const destroy = initPicker(element);
-    if (destroy) destroyers.push(destroy);
+  // --- инициализация всех колёс на странице ---
+  const controllers = [];
+  document.querySelectorAll('.wheel').forEach((el) => {
+    const ctrl = initPicker(el);
+    if (ctrl) controllers.push(ctrl);
   });
 
-  return () => {
-    destroyers.forEach((fn) => fn());
+  // Возвращаем API для внешнего контроля
+  const api = {
+    refresh() {
+      controllers.forEach((c) => c.refreshFromBridge?.());
+    },
+    destroy() {
+      controllers.forEach((c) => c.destroy?.());
+      bridgeListeners.forEach((off) => off());
+    },
   };
+
+  // Удобство: положим ссылку на API в документ (не обязательно)
+  document.__wheelsApi = api;
+  return api;
 }

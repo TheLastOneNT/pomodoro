@@ -1,176 +1,172 @@
-// src/js/auth.js — авторизация с безопасными гардом под оффлайн (без Supabase)
-import { supabase, SUPA_ENABLED_FLAG } from "./supa.js";
+// auth.js — авторизация (Supabase, при его наличии) + оффлайн фолбэк.
+// Экспорты: initAuth, getUser, isLoggedIn, toggleAuth
 
-const state = { user: null };
-export const getUser = () => state.user;
-export const isLoggedIn = () => Boolean(state.user);
+import { supabase, SUPA_ENABLED_FLAG } from './supa.js';
+
+const STATE = { user: null };
+export const getUser = () => STATE.user;
+export const isLoggedIn = () => Boolean(STATE.user);
+
+const ONCE_FLAG = '__auth_bound_once__';
 
 const dom = {
-  modal: document.getElementById("authModal"),
-  openButton: document.getElementById("openAuth"),
-  closeButton: document.getElementById("authClose"),
-  logoutButton: document.getElementById("logoutBtn"),
-  status: document.getElementById("authStatus"),
-  form: document.getElementById("authForm"),
-  email: document.getElementById("authEmail"),
-  password: document.getElementById("authPass"),
-  mode: document.getElementById("authMode"),
-  google: document.getElementById("loginGoogle"),
+  modal: document.getElementById('authModal'),
+  openButton: document.getElementById('openAuth'),
+  closeButton: document.getElementById('authClose'),
+  logoutButton: document.getElementById('logoutBtn'),
+  status: document.getElementById('authStatus'),
+  form: document.getElementById('authForm'),
+  email: document.getElementById('authEmail'),
+  password: document.getElementById('authPass'),
+  mode: document.getElementById('authMode'),
+  google: document.getElementById('loginGoogle'),
 };
 
 function setStatus(message) {
-  if (dom.status) dom.status.textContent = message ?? "";
-  if (message) console.log("[auth]", message);
-}
-
-function setControlsDisabled(disabled) {
-  [dom.form, dom.email, dom.password, dom.mode, dom.google].forEach((el) => {
-    if (!el) return;
-    if ("disabled" in el) el.disabled = disabled;
-  });
-
-  if (disabled) {
-    if (dom.email) dom.email.placeholder = "Не доступно (оффлайн)";
-    if (dom.password) dom.password.placeholder = "Не доступно (оффлайн)";
-  }
+  if (dom.status) dom.status.textContent = message ?? '';
 }
 
 export function toggleAuth(show) {
   if (!dom.modal) return;
-  dom.modal.classList.toggle("show", Boolean(show));
+  dom.modal.classList.toggle('show', !!show);
   if (show) dom.email?.focus();
 }
 
 function updateTriggerIcon() {
-  const email = state.user?.email || state.user?.user_metadata?.email;
-  if (!dom.openButton) return;
-  dom.openButton.textContent = email ? "👤" : "🔐";
+  const email = STATE.user?.email || STATE.user?.user_metadata?.email;
+  if (dom.openButton) {
+    dom.openButton.textContent = email ? '👤' : '🔐';
+    dom.openButton.setAttribute('title', email ? 'Аккаунт' : 'Войти');
+  }
 }
 
 function updateUI() {
-  const email = state.user?.email || state.user?.user_metadata?.email;
+  const email = STATE.user?.email || STATE.user?.user_metadata?.email;
   if (email) {
     setStatus(`В системе: ${email}`);
   } else {
-    setStatus(SUPA_ENABLED_FLAG ? "Не вошли" : "Оффлайн: вход недоступен");
+    setStatus(SUPA_ENABLED_FLAG ? 'Не вошли' : 'Оффлайн: авторизация недоступна');
   }
-
   updateTriggerIcon();
-  document.dispatchEvent(new CustomEvent("auth:change", { detail: state.user }));
+  document.dispatchEvent(new CustomEvent('auth:change', { detail: STATE.user }));
 }
 
-function bindCommonButtons() {
-  dom.openButton?.addEventListener("click", () => toggleAuth(true));
-  dom.closeButton?.addEventListener("click", () => toggleAuth(false));
+function bindCommon() {
+  if (window[ONCE_FLAG]) return;
+  window[ONCE_FLAG] = true;
+
+  dom.openButton?.addEventListener('click', () => toggleAuth(true));
+  dom.closeButton?.addEventListener('click', () => toggleAuth(false));
+}
+
+function disableAuthControls(disabled) {
+  [dom.form, dom.email, dom.password, dom.mode, dom.google].forEach((el) => {
+    if (!el) return;
+    if ('disabled' in el) el.disabled = disabled;
+  });
+  if (disabled) {
+    dom.email && (dom.email.placeholder = 'Не доступно (оффлайн)');
+    dom.password && (dom.password.placeholder = 'Не доступно (оффлайн)');
+  }
 }
 
 async function handleLogout() {
-  setStatus("Выход…");
+  setStatus('Выход…');
   try {
     const { error } = await supabase.auth.signOut();
-    if (error) {
-      alert(error.message);
-      setStatus("Ошибка выхода");
-    } else {
-      setStatus("Вышли из аккаунта");
-    }
-  } catch (error) {
-    console.error(error);
-    alert(error.message || "Sign out error");
-    setStatus("Ошибка выхода");
+    if (error) throw error;
+    setStatus('Вышли из аккаунта');
+  } catch (err) {
+    console.error(err);
+    alert(err?.message || 'Sign out error');
+    setStatus('Ошибка выхода');
   }
 }
 
-function bindOnlineHandlers() {
-  bindCommonButtons();
+function bindOnline() {
+  bindCommon();
 
-  dom.logoutButton?.addEventListener("click", handleLogout);
+  dom.logoutButton?.addEventListener('click', handleLogout);
 
-  dom.form?.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const email = (dom.email?.value || "").trim();
-    const password = dom.password?.value || "";
+  dom.form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = (dom.email?.value || '').trim();
+    const password = dom.password?.value || '';
 
     try {
-      if (dom.mode?.value === "signup") {
-        setStatus("Регистрирую…");
+      if (dom.mode?.value === 'signup') {
+        setStatus('Регистрирую…');
         const { error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
-        setStatus("Регистрация прошла. Проверь почту (подтверждение).");
+        setStatus('Регистрация завершена. Проверьте почту.');
       } else {
-        setStatus("Вход…");
+        setStatus('Вход…');
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        setStatus("Готово!");
+        setStatus('Готово!');
         toggleAuth(false);
       }
-    } catch (error) {
-      console.error(error);
-      alert(error.message || "Auth error");
-      setStatus(`Ошибка: ${error.message || ""}`);
+    } catch (err) {
+      console.error(err);
+      alert(err?.message || 'Auth error');
+      setStatus(`Ошибка: ${err?.message || ''}`);
     }
   });
 
-  dom.google?.addEventListener("click", async () => {
+  dom.google?.addEventListener('click', async () => {
     try {
-      setStatus("Редирект в Google…");
+      setStatus('Переход в Google…');
       const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
+        provider: 'google',
         options: {
           redirectTo: window.location.origin,
-          queryParams: { access_type: "offline", prompt: "consent" },
+          queryParams: { access_type: 'offline', prompt: 'consent' },
         },
       });
       if (error) throw error;
-    } catch (error) {
-      console.error(error);
-      alert(error.message || "Google OAuth error");
-      setStatus("Ошибка Google OAuth");
+    } catch (err) {
+      console.error(err);
+      alert(err?.message || 'Google OAuth error');
+      setStatus('Ошибка Google OAuth');
     }
   });
 }
 
-function bindOfflineHandlers() {
-  bindCommonButtons();
-  dom.logoutButton?.addEventListener("click", () =>
-    alert("В оффлайн-режиме выхода не требуется")
-  );
+function bindOffline() {
+  bindCommon();
+  dom.logoutButton?.addEventListener('click', () => alert('В оффлайн-режиме выход не требуется'));
 }
 
 export async function initAuth() {
   if (!SUPA_ENABLED_FLAG) {
-    console.warn(
-      "[auth] Supabase выключен (нет VITE_SUPABASE_URL/ANON_KEY). UI работает в оффлайн-режиме."
-    );
-    setStatus("Оффлайн-режим: авторизация недоступна");
-    setControlsDisabled(true);
-    bindOfflineHandlers();
+    console.warn('[auth] Supabase отключён. Работаем оффлайн.');
+    disableAuthControls(true);
+    bindOffline();
     updateUI();
     return;
   }
 
-  setControlsDisabled(false);
-  bindOnlineHandlers();
-  setStatus("Проверяю сессию…");
+  disableAuthControls(false);
+  bindOnline();
+  setStatus('Проверяю сессию…');
 
   try {
     const { data, error } = await supabase.auth.getUser();
-    if (error) console.warn("getUser error:", error);
-    state.user = data?.user ?? null;
+    if (error) console.warn('getUser error:', error);
+    STATE.user = data?.user ?? null;
     updateUI();
-  } catch (error) {
-    console.error("[auth] getUser failed:", error);
-    setStatus("Ошибка инициализации авторизации");
+  } catch (err) {
+    console.error('[auth] init failed:', err);
+    setStatus('Ошибка инициализации авторизации');
   }
 
   try {
-    supabase.auth.onAuthStateChange((event, session) => {
-      console.log("[auth] onAuthStateChange:", event, session);
-      state.user = session?.user ?? null;
+    supabase.auth.onAuthStateChange((_event, session) => {
+      STATE.user = session?.user ?? null;
       updateUI();
-      if (state.user) toggleAuth(false);
+      if (STATE.user) toggleAuth(false);
     });
-  } catch (error) {
-    console.error("[auth] onAuthStateChange failed:", error);
+  } catch (err) {
+    console.error('[auth] onAuthStateChange failed:', err);
   }
 }
