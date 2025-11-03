@@ -110,14 +110,8 @@ body.day .icon-btn {
 }
 
 .stage::before {
-  content: '';
-  position: absolute;
-  inset: clamp(12px, 4vw, 32px);
-  border-radius: clamp(32px, 8vw, 48px);
-  /* убираем затемняющие градиенты */
   background: none;
-  opacity: 0; /* страховка, чтобы ничего не затемняло */
-  z-index: 0;
+  opacity: 0;
 }
 
 .stage > * {
@@ -284,7 +278,10 @@ body.day .sb__footer {
     -webkit-background-clip: text;
   }
   .brand::before {
-    font-size: 1.05em;
+    content: none !important;
+    width: 0;
+    height: 0;
+    filter: none;
   }
   .actions {
     gap: 8px;

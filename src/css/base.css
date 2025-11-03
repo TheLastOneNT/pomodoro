@@ -69,11 +69,11 @@ canvas {
 /* Тёмная тема — через класс на body, чтобы не тащить компонентную логику сюда */
 body.night {
   color: var(--ink-inv, #e8eaf0);
-  background: var(--sb-bg); /* тот же градиент, что у сайдбара */
+  background: var(--sb-bg);
   background-attachment: fixed;
 }
 
 body.day {
-  background: var(--sb-bg); /* дневной вариант задаётся в body.day :root-блоке */
-  color: var(--ink, #0f1114);
+  background: var(--sb-bg);
+  color: var(--ink-inv, #e8eaf0); /* чтобы текст не «потонул» на тёмном фоне */
 }
