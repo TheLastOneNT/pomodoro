@@ -1,10 +1,3 @@
-/* ==========================================================================
-   Switches (final balanced version)
-   - два тумблера в ряд даже на мобильных
-   - без рамок и карточных фонов
-   - равные отступы, центрирование
-   ========================================================================== */
-
 .pane__switches {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -14,35 +7,27 @@
   margin-top: 8px;
   width: 100%;
 }
-
-/* Каждый свитч */
 .switch {
   display: flex;
   align-items: center;
-  justify-content: center; /* центровка текста и тумблера */
-  gap: 10px; /* одинаковое расстояние между лейблом и свитчем */
+  justify-content: center;
+  gap: 10px;
   padding: 4px 6px;
   background: transparent;
   border: none;
   box-shadow: none;
-  cursor: pointer;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
   width: 100%;
-  max-width: 160px; /* обеспечивает равную ширину для обоих */
+  max-width: 160px;
+  -webkit-tap-highlight-color: transparent;
 }
-
-/* Текст */
 .switch__title {
   font-weight: 700;
   font-size: 14px;
-  color: var(--ink, #e9edf3);
+  color: var(--ink);
   letter-spacing: 0.02em;
   margin: 0;
   text-align: right;
 }
-
-/* Сам тумблер */
 .switch > input[type='checkbox'] {
   appearance: none;
   -webkit-appearance: none;
@@ -50,14 +35,12 @@
   width: 40px;
   height: 24px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--switch-track, rgba(255, 255, 255, 0.12));
   transition: background 0.22s ease;
   cursor: pointer;
   outline: none;
   flex-shrink: 0;
 }
-
-/* Бегунок */
 .switch > input[type='checkbox']::after {
   content: '';
   position: absolute;
@@ -72,30 +55,22 @@
     transform 0.22s ease,
     background 0.22s ease;
 }
-
-/* Активное состояние */
 .switch > input[type='checkbox']:checked {
-  background: color-mix(in srgb, var(--accent, #7ef9c0) 70%, transparent);
+  background: color-mix(in srgb, var(--accent) 70%, transparent);
 }
 .switch > input[type='checkbox']:checked::after {
   transform: translateX(16px);
-  background: var(--accent, #7ef9c0);
+  background: var(--accent);
 }
-
-/* Hover */
 .switch > input[type='checkbox']:hover {
-  background: color-mix(in srgb, var(--accent, #7ef9c0) 25%, rgba(255, 255, 255, 0.1));
+  background: color-mix(in srgb, var(--accent) 25%, rgba(255, 255, 255, 0.1));
 }
-
-/* Focus */
 .switch > input[type='checkbox']:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--accent, #7ef9c0) 40%, transparent);
+  outline: 2px solid color-mix(in srgb, var(--accent) 40%, transparent);
   outline-offset: 2px;
 }
-
-/* Дневная тема */
 body.day .switch__title {
-  color: var(--ink, #111);
+  color: var(--ink);
 }
 body.day .switch > input[type='checkbox'] {
   background: rgba(0, 0, 0, 0.08);
@@ -104,13 +79,11 @@ body.day .switch > input[type='checkbox']::after {
   background: #fff;
 }
 body.day .switch > input[type='checkbox']:checked {
-  background: color-mix(in srgb, var(--accent, #6c7cff) 60%, transparent);
+  background: color-mix(in srgb, var(--accent) 60%, transparent);
 }
 body.day .switch > input[type='checkbox']:checked::after {
-  background: var(--accent, #6c7cff);
+  background: var(--accent);
 }
-
-/* Старая логика отключена */
 .switch__track,
 .switch__thumb,
 .switch::before,

@@ -1,5 +1,4 @@
-/* components/sidebar-shell.css */
-/* shell */
+/* Backdrop */
 .sb-backdrop {
   position: fixed;
   inset: 0;
@@ -14,14 +13,13 @@
   pointer-events: auto;
 }
 
-/* меню справа */
+/* Sidebar (без дополнительных оболочек) */
 .sb {
   position: fixed;
   top: 0;
   right: 0;
-  left: auto;
   height: 100svh;
-  width: var(--sb-w);
+  width: var(--sb-w, 340px);
   transform: translateX(100%);
   background: var(--sb-bg);
   color: var(--ink);
@@ -35,6 +33,7 @@
   transform: none;
 }
 
+/* Внутри — обычная колонка, без фикс-высот */
 .sb__inner {
   height: 100%;
   display: flex;
@@ -43,7 +42,9 @@
   padding: 20px;
 }
 
+/* Брендинг и крест закрытия */
 .sb__brand {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -70,6 +71,29 @@
   font-size: 12px;
 }
 
+/* Кнопка закрытия: используем #sbClose, только меняем вид */
+#sbClose {
+  position: absolute;
+  top: 0;
+  right: 0;
+  translate: -2px -2px;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+#sbClose:hover {
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.06);
+}
+
 .sb__divider {
   border: 0;
   border-top: 1px dashed var(--sb-line);
@@ -77,42 +101,7 @@
   margin: 6px 0;
 }
 
-/* tabs */
-.seg {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--sb-card);
-  border: 1px solid color-mix(in srgb, var(--accent) 18%, rgba(255, 255, 255, 0.06));
-  border-radius: 16px;
-  padding: 6px;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
-}
-.seg__btn {
-  flex: 1;
-  border: 0;
-  background: transparent;
-  color: var(--muted);
-  font-weight: 800;
-  font-size: 15px;
-  letter-spacing: 0.04em;
-  border-radius: 12px;
-  padding: 10px 14px;
-  transition:
-    color 0.2s,
-    background 0.2s,
-    box-shadow 0.2s;
-}
-.seg__btn.is-active {
-  color: var(--ink);
-  background: color-mix(in srgb, var(--accent) 12%, rgba(255, 255, 255, 0.08));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.35),
-    0 12px 24px rgba(0, 0, 0, 0.32);
-}
-
-/* panes & inputs */
+/* Контент сайдбара (все элементы сверху, без лишнего воздуха) */
 .pane {
   display: none;
   gap: 10px;
@@ -121,48 +110,6 @@
   display: grid;
 }
 
-.grid2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-
-.pill.in {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: var(--sb-card);
-  border: 1px solid var(--sb-line);
-  border-radius: 12px;
-  padding: 8px 10px;
-}
-.pill.in input {
-  width: 100%;
-  background: transparent;
-  border: 0;
-  color: var(--ink);
-  font-weight: 800;
-  outline: none;
-}
-
-.row-between {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.pane__actions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 18px;
-}
-.pane__actions .btn {
-  width: 100%;
-}
-
-/* responsive */
 @media (min-width: 1280px) {
   .sb {
     width: 380px;
@@ -171,8 +118,5 @@
 @media (max-width: 640px) {
   .sb {
     width: min(88vw, 360px);
-  }
-  .pane__actions {
-    grid-template-columns: 1fr;
   }
 }

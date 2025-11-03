@@ -15,7 +15,7 @@
   --accent: #7ef9c0;
   --accent-soft: rgba(126, 249, 192, 0.16);
 
-  /* служебные для свитчей */
+  /* трек свитча */
   --switch-track: rgba(255, 255, 255, 0.1);
 }
 
@@ -29,4 +29,82 @@ body.day {
   --accent: #6c7cff;
   --accent-soft: rgba(108, 124, 255, 0.18);
   --switch-track: rgba(15, 18, 28, 0.12);
+}
+
+/* План-мета */
+.plan__meta {
+  color: var(--muted);
+  font-weight: 800;
+  text-align: center;
+  letter-spacing: 0.02em;
+  margin: 8px auto 0;
+}
+
+/* Скрытый мост */
+.inputs-bridge.hidden {
+  display: none !important;
+}
+
+/* Список планов */
+.scroll {
+  max-height: 260px;
+  overflow: auto;
+  border: 1px dashed var(--sb-line);
+  border-radius: 12px;
+  padding: 6px;
+}
+.list {
+  display: grid;
+  gap: 6px;
+}
+.item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  background: var(--sb-card);
+  border: 1px solid var(--sb-line);
+  border-radius: 12px;
+  padding: 8px 10px;
+}
+.item.empty {
+  justify-content: center;
+  text-align: center;
+  color: var(--muted);
+}
+.item .text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.item .name {
+  font-weight: 800;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.item .meta {
+  color: var(--muted);
+  font-size: 12px;
+}
+.item .act {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.item .icon {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  background: transparent;
+  color: var(--ink);
+}
+.item .icon:hover {
+  background: rgba(255, 255, 255, 0.06);
 }
