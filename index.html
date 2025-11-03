@@ -14,15 +14,29 @@
       <header class="topbar">
         <div class="brand">🍅</div>
         <div class="actions">
-          <button id="openAuth" class="icon-btn" aria-label="Войти">🔐</button>
+          <button id="openAuth" class="icon-btn" type="button" aria-label="Войти">🔐</button>
           <div id="authStatus" class="auth-status"></div>
-          <button id="themeToggle" class="icon-btn" aria-label="Тема">🌙</button>
-          <button id="openSettings" class="icon-btn" aria-label="Меню">☰</button>
+          <button
+            id="themeToggle"
+            class="icon-btn"
+            type="button"
+            aria-label="Тема"
+            aria-pressed="false"
+          >
+            🌙
+          </button>
+          <button id="openSettings" class="icon-btn" type="button" aria-label="Меню">☰</button>
         </div>
       </header>
 
       <section class="stage" aria-live="polite">
-        <button class="tomato" id="tomatoBtn" aria-label="Старт/Пауза" aria-pressed="false">
+        <button
+          class="tomato"
+          id="tomatoBtn"
+          type="button"
+          aria-label="Старт/Пауза"
+          aria-pressed="false"
+        >
           <svg class="tomato__progress" viewBox="0 0 360 360" aria-hidden="true">
             <circle
               id="progressArc"
@@ -36,7 +50,14 @@
               style="transform: rotate(-90deg); transform-origin: 180px 180px"
             />
           </svg>
-          <img class="tomato__img" src="./assets/img/tomato.png" alt="Помидор" draggable="false" />
+          <img
+            class="tomato__img"
+            src="./assets/img/tomato.png"
+            alt="Помидор"
+            decoding="async"
+            fetchpriority="low"
+            draggable="false"
+          />
           <div class="tomato__shadow" aria-hidden="true"></div>
         </button>
 
@@ -61,16 +82,38 @@
         <hr class="sb__divider" />
 
         <div class="seg" role="tablist" aria-label="План занятий">
-          <button class="seg__btn is-active" data-mode="build" role="tab" aria-selected="true">
+          <button
+            id="tab-build"
+            class="seg__btn is-active"
+            role="tab"
+            aria-selected="true"
+            aria-controls="pane-build"
+            data-mode="build"
+            type="button"
+          >
             Настроить
           </button>
-          <button class="seg__btn" data-mode="pick" role="tab" aria-selected="false">
+          <button
+            id="tab-pick"
+            class="seg__btn"
+            role="tab"
+            aria-selected="false"
+            aria-controls="pane-pick"
+            data-mode="pick"
+            type="button"
+          >
             Выбрать
           </button>
         </div>
 
         <!-- ВКЛАДКА: НАСТРОИТЬ -->
-        <section class="pane is-open" data-pane="build">
+        <section
+          id="pane-build"
+          class="pane is-open"
+          role="tabpanel"
+          aria-labelledby="tab-build"
+          data-pane="build"
+        >
           <div class="wheels" aria-label="Колёсики выбора">
             <div class="wheel-card">
               <div class="wheel-wrap">
@@ -101,7 +144,7 @@
           </div>
 
           <!-- Мост для старой логики sidebar.js (скрытые inputs) -->
-          <div class="inputs-bridge hidden" aria-hidden="true">
+          <div class="inputs-bridge hidden" aria-hidden="true" inert>
             <div class="grid2">
               <label class="pill in"
                 ><span>Фокус, мин</span
@@ -122,19 +165,21 @@
           <div id="bEditTag" class="edit-tag hidden">Редактирование: <b id="bEditName"></b></div>
 
           <div class="pane__actions">
-            <button id="bApply" class="btn btn-primary">▶ Применить</button>
-            <button id="bSaveToggle" class="btn btn-secondary">💾 Сохранить план</button>
+            <button id="bApply" class="btn btn-primary" type="button">▶ Применить</button>
+            <button id="bSaveToggle" class="btn btn-secondary" type="button">
+              💾 Сохранить план
+            </button>
           </div>
 
           <div class="pane__switches">
             <label class="switch">
               <span class="switch__title">Автоцикл</span>
-              <input id="bAuto" type="checkbox" checked />
+              <input id="bAuto" class="switch__control" type="checkbox" checked />
             </label>
 
             <label class="switch">
               <span class="switch__title">Звук</span>
-              <input id="bSound" type="checkbox" checked />
+              <input id="bSound" class="switch__control" type="checkbox" checked />
             </label>
           </div>
 
@@ -143,24 +188,30 @@
               ><span>Название плана</span
               ><input id="bName" type="text" placeholder="Например: Утро 2×25/5"
             /></label>
-            <div class="row-between">
+            <div class="row-between row-between--tight">
               <span class="plan__hint">Сохранится в «Планы»</span>
               <div class="row-between" style="gap: 8px">
-                <button id="bCancelEdit" class="btn ghost hidden">Отмена</button>
-                <button id="bSave" class="btn">Сохранить</button>
+                <button id="bCancelEdit" class="btn ghost hidden" type="button">Отмена</button>
+                <button id="bSave" class="btn" type="button">Сохранить</button>
               </div>
             </div>
           </div>
         </section>
 
         <!-- ВКЛАДКА: ВЫБРАТЬ -->
-        <section class="pane" data-pane="pick">
+        <section
+          id="pane-pick"
+          class="pane"
+          role="tabpanel"
+          aria-labelledby="tab-pick"
+          data-pane="pick"
+        >
           <div class="list scroll" id="listPlans"></div>
         </section>
 
         <div class="sb__spacer"></div>
         <div class="sb__footer">
-          <button id="sbClose" class="sb__logout">✕ <span>Закрыть</span></button>
+          <button id="sbClose" class="sb__logout" type="button">✕ <span>Закрыть</span></button>
         </div>
       </div>
     </aside>
@@ -170,7 +221,7 @@
       <div class="auth-dialog" role="dialog" aria-modal="true" aria-labelledby="authTitle">
         <header class="auth-head">
           <strong id="authTitle">Вход / Регистрация</strong>
-          <button id="authClose" class="icon-btn" aria-label="Закрыть">✕</button>
+          <button id="authClose" class="icon-btn" type="button" aria-label="Закрыть">✕</button>
         </header>
 
         <button
@@ -207,7 +258,7 @@
         </form>
 
         <footer class="auth-foot">
-          <button id="logoutBtn" class="btn ghost">Выйти</button>
+          <button id="logoutBtn" class="btn ghost" type="button">Выйти</button>
         </footer>
       </div>
     </div>
