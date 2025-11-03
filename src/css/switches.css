@@ -1,0 +1,136 @@
+/* ==========================================================================
+   Switches (single source of truth)
+   - Визуал и логика на input[type=checkbox]
+   - Никаких дублей через .switch__track/.switch__thumb в разметке не требуется
+   - Компактная версия, чтобы "Автоцикл" и "Звук" помещались в один ряд
+   ========================================================================== */
+
+/* Контейнер с двумя тумблерами в ряд */
+.pane__switches {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* Карточка свитча */
+.switch {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--sb-card-strong, rgba(18, 23, 33, 0.95));
+  border: 1px solid color-mix(in srgb, var(--accent, #7ef9c0) 22%, rgba(255, 255, 255, 0.1));
+  border-radius: 14px;
+  box-shadow:
+    0 14px 26px rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.switch:hover {
+  border-color: color-mix(in srgb, var(--accent, #7ef9c0) 32%, rgba(255, 255, 255, 0.16));
+  box-shadow:
+    0 18px 36px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* Заголовок слева */
+.switch__title {
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  color: var(--ink, #e9edf3);
+  margin: 0;
+}
+
+/* Сам тумблер — input как единственный визуал */
+.switch > input[type='checkbox'] {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  width: 40px;
+  height: 24px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent, #7ef9c0) 18%, rgba(255, 255, 255, 0.18));
+  background: var(--switch-track, rgba(255, 255, 255, 0.1));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  outline: none;
+  cursor: pointer;
+  transition:
+    background 0.22s ease,
+    border-color 0.22s ease;
+}
+
+/* Бегунок через ::after */
+.switch > input[type='checkbox']::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(233, 237, 243, 0.9);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.switch > input[type='checkbox']:checked {
+  background: color-mix(in srgb, var(--accent, #7ef9c0) 55%, transparent);
+  border-color: color-mix(
+    in srgb,
+    var(--accent, #7ef9c0) 60%,
+    var(--sb-line, rgba(126, 249, 192, 0.14))
+  );
+}
+.switch > input[type='checkbox']:checked::after {
+  transform: translateX(16px); /* 40px ширина, отступы по 3px */
+  background: var(--accent, #7ef9c0);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--accent, #7ef9c0) 45%, rgba(0, 0, 0, 0.45));
+}
+
+/* Доступность */
+.switch > input[type='checkbox']:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent, #7ef9c0) 40%, transparent);
+  outline-offset: 2px;
+}
+
+/* Дневная тема */
+body.day .switch {
+  background: var(--sb-card, rgba(255, 255, 255, 0.9));
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow:
+    0 12px 20px rgba(15, 17, 20, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+body.day .switch > input[type='checkbox'] {
+  background: var(--switch-track, rgba(15, 18, 28, 0.12));
+  border-color: rgba(0, 0, 0, 0.1);
+}
+body.day .switch > input[type='checkbox']::after {
+  background: rgba(255, 255, 255, 0.92);
+}
+body.day .switch > input[type='checkbox']:checked {
+  background: color-mix(in srgb, var(--accent, #6c7cff) 50%, rgba(255, 255, 255, 0.65));
+  border-color: color-mix(in srgb, var(--accent, #6c7cff) 60%, rgba(0, 0, 0, 0.12));
+}
+body.day .switch > input[type='checkbox']:checked::after {
+  background: var(--accent, #6c7cff);
+}
+
+/* Защита от старых реализаций: если где-то остались эти элементы в DOM — скрываем */
+.switch__track,
+.switch__thumb {
+  display: none !important;
+}
+.switch::before,
+.switch::after {
+  content: none !important;
+}
