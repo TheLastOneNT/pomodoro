@@ -1,31 +1,35 @@
 /* ==========================================================================
-   Switches (clean module, centered & balanced)
+   Switches (final balanced version)
+   - два тумблера в ряд даже на мобильных
+   - без рамок и карточных фонов
+   - равные отступы, центрирование
    ========================================================================== */
 
 .pane__switches {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px; /* равный отступ между свитчами */
-  justify-items: center; /* выравниваем оба блока по центру */
+  gap: 10px;
+  justify-items: center;
   align-items: center;
   margin-top: 8px;
+  width: 100%;
 }
 
 /* Каждый свитч */
 .switch {
   display: flex;
   align-items: center;
-  justify-content: center; /* центровка внутри ячейки */
-  gap: 10px; /* расстояние между лейблом и тумблером */
-  padding: 4px 8px;
+  justify-content: center; /* центровка текста и тумблера */
+  gap: 10px; /* одинаковое расстояние между лейблом и свитчем */
+  padding: 4px 6px;
   background: transparent;
   border: none;
   box-shadow: none;
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  width: 100%; /* чтобы визуально занимали одинаковую ширину */
-  max-width: 150px; /* можно регулировать при необходимости */
+  width: 100%;
+  max-width: 160px; /* обеспечивает равную ширину для обоих */
 }
 
 /* Текст */
@@ -35,7 +39,7 @@
   color: var(--ink, #e9edf3);
   letter-spacing: 0.02em;
   margin: 0;
-  text-align: right; /* выравнивание текста к свитчу */
+  text-align: right;
 }
 
 /* Сам тумблер */
@@ -50,7 +54,7 @@
   transition: background 0.22s ease;
   cursor: pointer;
   outline: none;
-  flex-shrink: 0; /* чтобы не сжимался при адаптации */
+  flex-shrink: 0;
 }
 
 /* Бегунок */
@@ -104,18 +108,6 @@ body.day .switch > input[type='checkbox']:checked {
 }
 body.day .switch > input[type='checkbox']:checked::after {
   background: var(--accent, #6c7cff);
-}
-
-/* Адаптив: на маленьких экранах в колонку */
-@media (max-width: 480px) {
-  .pane__switches {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-  .switch {
-    justify-content: center;
-    max-width: none;
-  }
 }
 
 /* Старая логика отключена */
