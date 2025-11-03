@@ -1,9 +1,6 @@
 .topbar {
-  position: fixed;
-  top: clamp(18px, 4vw, 32px);
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(960px, calc(100vw - clamp(32px, 8vw, 72px)));
+  position: absolute;
+  inset: clamp(18px, 4vw, 32px);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -13,7 +10,7 @@
   border: 1px solid var(--glass-line-night, rgba(126, 249, 192, 0.12));
   backdrop-filter: blur(18px);
   box-shadow: 0 22px 48px rgba(0, 0, 0, 0.46);
-  z-index: 20;
+  z-index: 10;
 }
 
 body.day .topbar {
@@ -101,13 +98,12 @@ body.day .icon-btn {
 
 .stage {
   position: relative;
-  flex: 1;
-  min-height: 100svh;
+  height: 100svh;
   display: grid;
   place-items: center;
   align-content: center;
   gap: clamp(26px, 6vw, 38px);
-  padding: clamp(160px, 20vw, 220px) clamp(22px, 6vw, 44px) clamp(32px, 8vw, 72px);
+  padding: clamp(22px, 6vw, 44px);
   text-align: center;
 }
 
@@ -219,13 +215,9 @@ body.day[data-pomo-mode='pause'] .readout .phase {
 
 @media (max-width: 720px) {
   .topbar {
-    width: calc(100vw - clamp(24px, 6vw, 48px));
+    inset: clamp(12px, 4vw, 18px);
     border-radius: 20px;
     padding: 12px 16px;
-  }
-
-  .stage {
-    padding: clamp(120px, 32vw, 180px) clamp(18px, 5vw, 32px) clamp(32px, 12vw, 60px);
   }
 
   .brand {
