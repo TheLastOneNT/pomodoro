@@ -297,35 +297,73 @@ class SidebarController {
   }
 
   renderPlans() {
-    if (!this.dom.plansList) return;
+    const list = this.dom.plansList;
+    if (!list) return;
 
-    this.dom.plansList.innerHTML = '';
-    if (!this.plans.length) {
+    // очищаем корректно
+    list.replaceChildren();
+
+    // ПУСТОЙ СПИСОК — одна компактная фраза
+    if (!Array.isArray(this.plans) || this.plans.length === 0) {
       const empty = document.createElement('div');
-      empty.className = 'item';
-      empty.innerHTML =
-        '<div class="name">Нет планов</div><div class="meta">Сохрани план во вкладке «Настроить»</div><div></div>';
-      this.dom.plansList.appendChild(empty);
+      empty.className = 'item empty';
+      empty.setAttribute('role', 'note');
+      empty.textContent = 'Нет сохранённых планов — сохраните во вкладке «Настроить».';
+      list.appendChild(empty);
       return;
     }
+
+    // ЕСТЬ ПЛАНЫ — аккуратно строим DOM, без innerHTML
+    const frag = document.createDocumentFragment();
 
     this.plans.forEach((plan) => {
       const row = document.createElement('div');
       row.className = 'item';
-      row.innerHTML = `
-        <div class="text">
-          <span class="name">${plan.name}</span>
-          <span class="meta">• ${plan.focus}/${plan.break} ×${plan.cycles} · ≈ ${
-            plan.total ?? plan.cycles * (plan.focus + plan.break)
-          } мин</span>
-        </div>
-        <div class="act">
-          <button class="icon" data-act="run" data-id="${plan.id}" aria-label="Запустить">▶</button>
-          <button class="icon" data-act="edit" data-id="${plan.id}" aria-label="Редактировать">✎</button>
-          <button class="icon" data-act="del" data-id="${plan.id}" aria-label="Удалить">✕</button>
-        </div>`;
-      this.dom.plansList.appendChild(row);
+
+      const text = document.createElement('div');
+      text.className = 'text';
+
+      const name = document.createElement('span');
+      name.className = 'name';
+      name.textContent = plan.name;
+
+      const meta = document.createElement('span');
+      meta.className = 'meta';
+      const total = plan.total ?? plan.cycles * (plan.focus + plan.break);
+      meta.textContent = `• ${plan.focus}/${plan.break} ×${plan.cycles} · ≈ ${total} мин`;
+
+      text.append(name, meta);
+
+      const act = document.createElement('div');
+      act.className = 'act';
+
+      const run = document.createElement('button');
+      run.className = 'icon';
+      run.dataset.act = 'run';
+      run.dataset.id = plan.id;
+      run.setAttribute('aria-label', 'Запустить');
+      run.textContent = '▶';
+
+      const edit = document.createElement('button');
+      edit.className = 'icon';
+      edit.dataset.act = 'edit';
+      edit.dataset.id = plan.id;
+      edit.setAttribute('aria-label', 'Редактировать');
+      edit.textContent = '✎';
+
+      const del = document.createElement('button');
+      del.className = 'icon';
+      del.dataset.act = 'del';
+      del.dataset.id = plan.id;
+      del.setAttribute('aria-label', 'Удалить');
+      del.textContent = '✕';
+
+      act.append(run, edit, del);
+      row.append(text, act);
+      frag.appendChild(row);
     });
+
+    list.appendChild(frag);
   }
 
   async handlePlanAction(event) {
