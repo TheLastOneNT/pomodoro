@@ -77,3 +77,11 @@ body.day {
   background: var(--sb-bg);
   color: var(--ink-inv, #e8eaf0); /* чтобы текст не «потонул» на тёмном фоне */
 }
+
+a,
+button,
+input,
+select,
+textarea {
+  touch-action: manipulation;
+}
