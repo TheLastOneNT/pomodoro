@@ -85,3 +85,44 @@ select,
 textarea {
   touch-action: manipulation;
 }
+
+/* === Disable text selection on mobile (except inputs) === */
+
+/* Гасим выделение и системные вызовы (лупа/копировать) почти везде */
+*:not(input):not(textarea):not([contenteditable='true']) {
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none; /* iOS: без контекстного меню по долгому тапу */
+}
+
+/* На кликабельных элементах убираем дабл-тап зум и подсветку */
+a,
+button,
+.btn,
+.icon-btn,
+.seg__btn,
+.wheel,
+.wheels,
+.topbar,
+.stage,
+.sb {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent; /* без серой вспышки */
+}
+
+/* Для изображений/иконок — никаких «перетаскиваний/призраков» */
+img,
+svg {
+  -webkit-user-drag: none;
+  user-drag: none;
+}
+
+/* В формах оставляем выделение текста и курсор, иначе неудобно печатать */
+input,
+textarea,
+[contenteditable='true'] {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
