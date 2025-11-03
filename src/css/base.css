@@ -115,7 +115,6 @@ button,
 img,
 svg {
   -webkit-user-drag: none;
-  user-drag: none;
 }
 
 /* В формах оставляем выделение текста и курсор, иначе неудобно печатать */

@@ -1,22 +1,17 @@
 /* ===========================
-   Page: Plans
+   Page: Plans / Панель планов
    =========================== */
 
-/* Контейнер секции планов (пример) */
+:root {
+  --control-h: 44px;
+  --control-pad-x: 14px;
+  --control-radius: 12px;
+}
+
+/* Контейнер секции планов */
 .plans {
   display: grid;
   gap: 12px;
-}
-
-/* Блок с кнопками под колесами */
-.pane__actions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 12px;
-}
-.pane__actions .btn {
-  width: 100%;
 }
 
 /* Метаданные/подсказки */
@@ -54,4 +49,95 @@
   border-radius: 12px;
   padding: 8px 10px;
   box-sizing: border-box;
+}
+.item.empty {
+  justify-content: center;
+  text-align: center;
+  color: var(--muted);
+}
+.item .text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.item .name {
+  font-weight: 800;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.item .meta {
+  color: var(--muted);
+  font-size: 12px;
+}
+.item .act {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.item .icon {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  background: transparent;
+  color: var(--ink);
+}
+.item .icon:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* Вкладки */
+.seg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--sb-card);
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, rgba(255, 255, 255, 0.06));
+  border-radius: 16px;
+  padding: 6px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+.seg__btn {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  border-radius: var(--control-radius);
+  padding: 0 var(--control-pad-x);
+  height: var(--control-h);
+  line-height: calc(var(--control-h) - 2px);
+  transition:
+    color 0.2s,
+    background 0.2s,
+    box-shadow 0.2s;
+}
+.seg__btn.is-active {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--accent) 12%, rgba(255, 255, 255, 0.08));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.35),
+    0 12px 24px rgba(0, 0, 0, 0.32);
+}
+
+/* Ряд кнопок — ВСЕГДА одна под одной (и на ПК, и на мобилке) */
+.pane__actions {
+  display: grid;
+  grid-template-columns: 1fr; /* ← главная правка */
+  gap: 12px;
+  margin-top: 12px;
+}
+.pane__actions .btn {
+  width: 100%;
+  min-width: 0;
+  white-space: nowrap; /* текст в одну строку */
 }

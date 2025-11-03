@@ -4,56 +4,27 @@
   --control-radius: 12px;
 }
 
-/* Вкладки */
-.seg {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--sb-card);
-  border: 1px solid color-mix(in srgb, var(--accent) 18%, rgba(255, 255, 255, 0.06));
-  border-radius: 16px;
-  padding: 6px;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
-}
-.seg__btn {
-  flex: 1;
-  border: 0;
-  background: transparent;
-  color: var(--muted);
-  font-weight: 800;
-  font-size: 15px;
-  letter-spacing: 0.04em;
-  border-radius: var(--control-radius);
-  padding: 0 var(--control-pad-x);
-  height: var(--control-h);
-  line-height: calc(var(--control-h) - 2px);
-  transition:
-    color 0.2s,
-    background 0.2s,
-    box-shadow 0.2s;
-}
-.seg__btn.is-active {
-  color: var(--ink);
-  background: color-mix(in srgb, var(--accent) 12%, rgba(255, 255, 255, 0.08));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.35),
-    0 12px 24px rgba(0, 0, 0, 0.32);
-}
-
-/* Кнопки действий той же высоты */
+/* === Универсальные кнопки === */
 .btn {
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border-radius: var(--control-radius);
-  padding: 0 var(--control-pad-x);
   height: var(--control-h);
+  padding: 0 var(--control-pad-x);
+  border-radius: var(--control-radius);
+
+  font: inherit;
   font-weight: 800;
-  letter-spacing: 0.04em;
   font-size: 14px;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+
+  white-space: nowrap; /* не переносим внутри кнопки */
+  line-height: 1; /* ровный вертикальный ритм */
+  user-select: none;
+
   color: var(--accent);
   border: 1px solid color-mix(in srgb, var(--accent) 40%, rgba(255, 255, 255, 0.1));
   background: linear-gradient(
@@ -65,6 +36,7 @@
     0 20px 36px rgba(0, 0, 0, 0.55),
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
     inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+
   transition:
     transform 0.18s,
     box-shadow 0.22s,
@@ -72,6 +44,7 @@
     border-color 0.22s,
     color 0.2s;
 }
+
 .btn:hover {
   transform: translateY(-1px);
 }
@@ -79,14 +52,17 @@
   transform: translateY(0);
   box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.45);
 }
+
 .btn-primary {
   text-shadow: 0 0 16px color-mix(in srgb, var(--accent) 45%, transparent);
 }
+
 .btn-secondary {
   color: var(--ink);
   border-color: color-mix(in srgb, var(--accent) 26%, rgba(255, 255, 255, 0.08));
   background: linear-gradient(160deg, rgba(255, 255, 255, 0.08), rgba(6, 10, 16, 0.68));
 }
+
 .btn.ghost {
   background: transparent;
   border-color: rgba(255, 255, 255, 0.14);
@@ -94,17 +70,28 @@
   box-shadow: none;
 }
 
-/* Ряд кнопок */
-.pane__actions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 12px;
+/* Внутренние элементы: иконка + текст */
+.btn .i {
+  display: inline-grid;
+  place-items: center;
+  line-height: 1;
+  font-size: 1em;
+  flex: 0 0 auto;
 }
-.pane__actions .btn {
-  width: 100%;
+.btn .t {
+  flex: 0 1 auto;
+  overflow: hidden; /* на всякий случай */
+  text-overflow: ellipsis;
 }
 
+/* Узкие экраны — скрываем иконку у кнопки сохранения */
+@media (max-width: 480px) {
+  .btn-save .i {
+    display: none;
+  }
+}
+
+/* Светлая тема */
 body.day .btn {
   color: var(--ink);
   background: linear-gradient(160deg, rgba(108, 124, 255, 0.18), rgba(255, 255, 255, 0.96));
@@ -117,8 +104,8 @@ body.day .btn {
 body.day .btn-secondary {
   background: linear-gradient(160deg, rgba(255, 255, 255, 0.92), rgba(221, 229, 255, 0.8));
 }
-@media (max-width: 640px) {
-  .pane__actions {
-    grid-template-columns: 1fr;
-  }
+
+/* Специфика для "Сохранить план" — компактнее паддинги */
+.btn-save {
+  padding-inline: 12px;
 }
