@@ -1,0 +1,47 @@
+/* components/sidebar-lists.css */
+.scroll {
+  max-height: 260px;
+  overflow: auto;
+  border: 1px dashed var(--sb-line);
+  border-radius: 12px;
+  padding: 6px;
+}
+.list {
+  display: grid;
+  gap: 6px;
+}
+.item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  background: var(--sb-card);
+  border: 1px solid var(--sb-line);
+  border-radius: 12px;
+  padding: 8px 10px;
+  box-sizing: border-box;
+}
+.sb__footer {
+  border-top: 1px solid var(--sb-line);
+  padding-top: 12px;
+  display: grid;
+  gap: 10px;
+}
+.sb__logout {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--sb-line);
+  color: inherit;
+  border-radius: 12px;
+  padding: 10px;
+}
+
+@media (max-width: 380px) {
+  .item .meta {
+    display: none;
+  }
+}
