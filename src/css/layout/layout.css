@@ -114,14 +114,9 @@ body.day .icon-btn {
   position: absolute;
   inset: clamp(12px, 4vw, 32px);
   border-radius: clamp(32px, 8vw, 48px);
-  background:
-    radial-gradient(
-      80% 80% at 50% 20%,
-      color-mix(in srgb, var(--accent-idle) 14%, transparent) 0%,
-      transparent 70%
-    ),
-    radial-gradient(70% 60% at 50% 75%, rgba(0, 0, 0, 0.58) 0%, transparent 75%);
-  opacity: 0.85;
+  /* убираем затемняющие градиенты */
+  background: none;
+  opacity: 0; /* страховка, чтобы ничего не затемняло */
   z-index: 0;
 }
 
@@ -276,7 +271,17 @@ body.day .sb__footer {
   }
 
   .brand {
-    letter-spacing: 0.18em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 800;
+    letter-spacing: 0.22em; /* было 0.28em */
+    font-size: clamp(16px, 2.8vw, 22px);
+    text-transform: uppercase;
+    color: transparent;
+    background: linear-gradient(120deg, var(--accent-idle), var(--accent-focus));
+    background-clip: text;
+    -webkit-background-clip: text;
   }
   .brand::before {
     font-size: 1.05em;
