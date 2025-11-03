@@ -12,7 +12,7 @@
   <body class="night">
     <main class="app" id="app">
       <header class="topbar">
-        <div class="brand">🍅</div>
+        <div class="brand">PØMO</div>
         <div class="actions">
           <button id="openAuth" class="icon-btn" type="button" aria-label="Войти">🔐</button>
           <div id="authStatus" class="auth-status"></div>
@@ -38,27 +38,14 @@
           aria-pressed="false"
         >
           <svg class="tomato__progress" viewBox="0 0 360 360" aria-hidden="true">
-            <circle
-              id="progressArc"
-              cx="180"
-              cy="180"
-              r="168"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="10"
-              stroke-linecap="round"
-              style="transform: rotate(-90deg); transform-origin: 180px 180px"
-            />
+            <circle id="progressArc" cx="180" cy="180" r="168" />
           </svg>
-          <img
-            class="tomato__img"
-            src="./assets/img/tomato.png"
-            alt="Помидор"
-            decoding="async"
-            fetchpriority="low"
-            draggable="false"
-          />
-          <div class="tomato__shadow" aria-hidden="true"></div>
+          <div class="tomato__body" aria-hidden="true">
+            <span class="tomato__leaf"></span>
+            <span class="tomato__seed tomato__seed--l"></span>
+            <span class="tomato__seed tomato__seed--r"></span>
+            <span class="tomato__seed tomato__seed--b"></span>
+          </div>
         </button>
 
         <div class="readout">
@@ -75,7 +62,7 @@
     <aside id="sidebar" class="sb" aria-label="Настройки" aria-hidden="true">
       <div class="sb__inner">
         <header class="sb__brand">
-          <div class="logo">🍅</div>
+          <div class="logo">◎</div>
           <div class="title"><strong>План занятий</strong><span>настрой или выбери</span></div>
           <button id="sbClose" class="sb__close" type="button" aria-label="Закрыть">✕</button>
         </header>
