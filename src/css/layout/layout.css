@@ -1,6 +1,8 @@
 .topbar {
-  position: absolute;
-  inset: clamp(18px, 4vw, 32px);
+  position: fixed;
+  top: clamp(18px, 4vw, 32px);
+  left: clamp(18px, 4vw, 32px);
+  right: clamp(18px, 4vw, 32px);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -113,7 +115,11 @@ body.day .icon-btn {
   inset: clamp(12px, 4vw, 32px);
   border-radius: clamp(32px, 8vw, 48px);
   background:
-    radial-gradient(80% 80% at 50% 20%, color-mix(in srgb, var(--accent-idle) 14%, transparent) 0%, transparent 70%),
+    radial-gradient(
+      80% 80% at 50% 20%,
+      color-mix(in srgb, var(--accent-idle) 14%, transparent) 0%,
+      transparent 70%
+    ),
     radial-gradient(70% 60% at 50% 75%, rgba(0, 0, 0, 0.58) 0%, transparent 75%);
   opacity: 0.85;
   z-index: 0;
@@ -136,7 +142,9 @@ body.day .icon-btn {
   letter-spacing: 0.6px;
   color: #f7f8ff;
   text-shadow: 0 12px 32px rgba(0, 0, 0, 0.65);
-  transition: color 0.3s ease, text-shadow 0.3s ease;
+  transition:
+    color 0.3s ease,
+    text-shadow 0.3s ease;
 }
 
 .readout .phase {
