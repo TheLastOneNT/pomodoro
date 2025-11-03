@@ -223,19 +223,25 @@ body.day[data-pomo-mode='pause'] .readout .phase {
 
 @media (max-width: 720px) {
   .topbar {
-    inset: clamp(12px, 4vw, 18px);
+    position: fixed;
+    top: calc(max(12px, env(safe-area-inset-top)));
+    left: clamp(12px, 4vw, 18px);
+    right: clamp(12px, 4vw, 18px);
+    bottom: auto; /* критично: не растягиваем вниз */
     border-radius: 20px;
     padding: 12px 16px;
+    z-index: 10;
   }
 
   .brand {
     letter-spacing: 0.18em;
   }
-
   .brand::before {
     font-size: 1.05em;
   }
-
+  .actions {
+    gap: 8px;
+  }
   .icon-btn {
     border-radius: 14px;
   }
