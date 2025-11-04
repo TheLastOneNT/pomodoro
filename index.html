@@ -14,20 +14,16 @@
 
   <body class="night">
     <main class="app" id="app">
-      <header class="topbar">
-        <div class="brand" aria-label="POMODORO">POMØDORO</div>
-        <div class="actions">
-          <button
-            id="themeToggle"
-            class="icon-btn"
-            type="button"
-            aria-label="Тема"
-            aria-pressed="false"
-          >
-            🌙
-          </button>
-          <button id="openSettings" class="icon-btn" type="button" aria-label="Меню">☰</button>
-        </div>
+      <header class="masthead">
+        <h1 class="brand masthead__title" aria-label="POMODORO">POMØDORO</h1>
+        <button
+          id="openSettings"
+          class="icon-btn masthead__menu"
+          type="button"
+          aria-label="Открыть меню"
+        >
+          ☰
+        </button>
       </header>
 
       <section class="stage" aria-live="polite">
@@ -51,7 +47,7 @@
 
         <div class="readout">
           <div id="time" class="time">25:00</div>
-          <div id="phase" class="phase">Отдыхаем 😌</div>
+          <div id="phase" class="phase">Готовы начать</div>
         </div>
       </section>
 
@@ -171,6 +167,17 @@
               <span class="switch__title">Звук</span>
               <input id="bSound" class="switch__control" type="checkbox" checked />
             </label>
+
+            <button
+              id="themeToggle"
+              class="theme-toggle"
+              type="button"
+              aria-label="Переключить тему"
+              aria-pressed="false"
+            >
+              <span class="theme-toggle__icon" aria-hidden="true">🌙</span>
+              <span class="theme-toggle__text">Ночной режим</span>
+            </button>
           </div>
 
           <div id="bSaveBlock" class="save-row hidden">
