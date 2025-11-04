@@ -1,46 +1,68 @@
 .pane__switches {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 10px;
-  justify-items: center;
-  align-items: center;
-  margin-top: 8px;
+  align-items: stretch;
+  margin-top: 10px;
   width: 100%;
 }
+
 .switch {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 4px 6px;
-  background: transparent;
-  border: none;
-  box-shadow: none;
+  justify-content: space-between;
+  gap: 12px;
   width: 100%;
-  max-width: 160px;
+  height: var(--control-h);
+  padding: 0 var(--control-pad-x);
+  border-radius: var(--control-radius);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 18px 32px rgba(0, 0, 0, 0.5);
   -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.22s ease,
+    background 0.22s ease,
+    border-color 0.22s ease;
 }
+
+.switch:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 24px 40px rgba(0, 0, 0, 0.56);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.26);
+}
+
+.switch:active {
+  transform: translateY(0);
+  box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.5);
+}
+
 .switch__title {
-  font-weight: 700;
-  font-size: 14px;
-  color: var(--ink);
-  letter-spacing: 0.02em;
   margin: 0;
-  text-align: right;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-inv);
 }
+
 .switch > input[type='checkbox'] {
   appearance: none;
   -webkit-appearance: none;
   position: relative;
-  width: 40px;
+  width: 42px;
   height: 24px;
   border-radius: 999px;
-  background: var(--switch-track, rgba(255, 255, 255, 0.12));
+  background: rgba(255, 255, 255, 0.16);
   transition: background 0.22s ease;
   cursor: pointer;
   outline: none;
   flex-shrink: 0;
 }
+
 .switch > input[type='checkbox']::after {
   content: '';
   position: absolute;
@@ -55,39 +77,125 @@
     transform 0.22s ease,
     background 0.22s ease;
 }
+
 .switch > input[type='checkbox']:checked {
-  background: color-mix(in srgb, var(--accent) 70%, transparent);
+  background: color-mix(in srgb, var(--accent) 65%, rgba(255, 255, 255, 0.12));
 }
+
 .switch > input[type='checkbox']:checked::after {
-  transform: translateX(16px);
+  transform: translateX(18px);
   background: var(--accent);
 }
+
 .switch > input[type='checkbox']:hover {
-  background: color-mix(in srgb, var(--accent) 25%, rgba(255, 255, 255, 0.1));
+  background: color-mix(in srgb, var(--accent) 24%, rgba(255, 255, 255, 0.12));
 }
+
 .switch > input[type='checkbox']:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--accent) 40%, transparent);
-  outline-offset: 2px;
+  outline-offset: 3px;
 }
-body.day .switch__title {
-  color: var(--ink);
-}
-body.day .switch > input[type='checkbox'] {
-  background: rgba(0, 0, 0, 0.08);
-}
-body.day .switch > input[type='checkbox']::after {
-  background: #fff;
-}
-body.day .switch > input[type='checkbox']:checked {
-  background: color-mix(in srgb, var(--accent) 60%, transparent);
-}
-body.day .switch > input[type='checkbox']:checked::after {
-  background: var(--accent);
-}
+
 .switch__track,
 .switch__thumb,
 .switch::before,
 .switch::after {
   display: none !important;
   content: none !important;
+}
+
+.theme-toggle {
+  grid-column: 1 / -1;
+  justify-self: stretch;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: var(--control-h);
+  padding: 0 var(--control-pad-x);
+  border-radius: var(--control-radius);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--ink-inv);
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.5);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.22s ease,
+    background 0.22s ease,
+    border-color 0.22s ease;
+}
+
+.theme-toggle:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 24px 42px rgba(0, 0, 0, 0.56);
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.26);
+}
+
+.theme-toggle:active {
+  transform: translateY(0);
+  box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.5);
+}
+
+.theme-toggle__icon {
+  font-size: 18px;
+  line-height: 1;
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.45));
+}
+
+.theme-toggle__text {
+  white-space: nowrap;
+}
+
+body.day .switch {
+  border-color: rgba(17, 19, 24, 0.16);
+  background: rgba(236, 240, 255, 0.86);
+  box-shadow: 0 16px 30px rgba(26, 34, 58, 0.2);
+}
+
+body.day .switch:hover {
+  background: rgba(245, 248, 255, 0.94);
+  border-color: rgba(17, 19, 24, 0.24);
+  box-shadow: 0 22px 40px rgba(26, 34, 58, 0.24);
+}
+
+body.day .switch__title {
+  color: var(--ink);
+}
+
+body.day .switch > input[type='checkbox'] {
+  background: rgba(17, 19, 24, 0.16);
+}
+
+body.day .switch > input[type='checkbox']::after {
+  background: #fff;
+}
+
+body.day .switch > input[type='checkbox']:checked {
+  background: color-mix(in srgb, var(--accent) 45%, rgba(17, 19, 24, 0.1));
+}
+
+body.day .switch > input[type='checkbox']:checked::after {
+  background: var(--accent);
+}
+
+body.day .switch > input[type='checkbox']:hover {
+  background: color-mix(in srgb, var(--accent) 30%, rgba(17, 19, 24, 0.12));
+}
+
+body.day .theme-toggle {
+  background: rgba(238, 241, 255, 0.86);
+  border-color: rgba(17, 19, 24, 0.16);
+  color: var(--ink);
+  box-shadow: 0 18px 36px rgba(26, 34, 58, 0.2);
+}
+
+body.day .theme-toggle:hover {
+  background: rgba(247, 249, 255, 0.94);
+  border-color: rgba(17, 19, 24, 0.24);
+  box-shadow: 0 24px 44px rgba(26, 34, 58, 0.24);
 }
