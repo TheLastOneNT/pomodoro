@@ -109,6 +109,7 @@
   pointer-events: auto;
   z-index: 120;
 }
+
 #sbClose:hover {
   transform: translateY(calc(-50% - 2px));
   box-shadow:
