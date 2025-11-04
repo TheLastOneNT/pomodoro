@@ -16,7 +16,7 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   color: var(--ink, #111);
-  background: var(--day-0, #fff);
+  background: var(--night-0, #03030a);
   font-family:
     system-ui,
     -apple-system,
@@ -75,7 +75,7 @@ body.night {
 
 body.day {
   background: var(--sb-bg);
-  color: var(--ink-inv, #e8eaf0); /* чтобы текст не «потонул» на тёмном фоне */
+  color: var(--ink, #111318);
 }
 
 a,
@@ -104,7 +104,6 @@ button,
 .seg__btn,
 .wheel,
 .wheels,
-.topbar,
 .stage,
 .sb {
   touch-action: manipulation;

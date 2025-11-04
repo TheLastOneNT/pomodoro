@@ -1,4 +1,4 @@
-// app.js — ядро таймера + единая логика темы на кнопке в топбаре
+// app.js — ядро таймера + единая логика темы на кнопке в сайдбаре
 import { state } from './state.js';
 import * as timer from './timer.js';
 import { sync } from './ui.js';
@@ -86,10 +86,15 @@ const theme = {
     if (!t) return;
     const isDay = state.theme === 'day';
     const icon = isDay ? '🌞' : '🌙';
-    const label = isDay ? 'Сменить на тёмную тему' : 'Сменить на светлую тему';
-    t.textContent = icon;
-    t.setAttribute('aria-label', label);
-    t.setAttribute('title', label);
+    const modeLabel = isDay ? 'Дневной режим' : 'Ночной режим';
+    const actionLabel = isDay ? 'Переключить на ночной режим' : 'Переключить на дневной режим';
+    const iconSpan = t.querySelector('.theme-toggle__icon');
+    const textSpan = t.querySelector('.theme-toggle__text');
+    if (iconSpan) iconSpan.textContent = icon;
+    if (textSpan) textSpan.textContent = modeLabel;
+    t.setAttribute('aria-label', actionLabel);
+    t.setAttribute('title', actionLabel);
+    t.setAttribute('aria-pressed', String(!isDay));
   },
   set(mode) {
     state.theme = mode === 'day' ? 'day' : 'night';
