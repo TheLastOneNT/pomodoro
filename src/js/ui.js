@@ -53,11 +53,11 @@ export function fmt(s) {
 function statusText() {
   switch (state.phase) {
     case 'idle':
-      return 'Готовы начать 😌';
+      return 'Готовы начать';
     case 'focus':
-      return state.running ? 'Фокус 🎯' : 'Пауза ⏸️';
+      return state.running ? 'Фокус' : 'Пауза';
     case 'break':
-      return state.running ? 'Перерыв ☕️' : 'Пауза ⏸️';
+      return state.running ? 'Перерыв' : 'Пауза';
     default:
       return '';
   }
