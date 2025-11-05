@@ -60,7 +60,11 @@
   letter-spacing: 0.08em;
   color: var(--accent);
   background:
-    radial-gradient(120% 120% at 50% 18%, color-mix(in srgb, var(--accent) 35%, rgba(255, 255, 255, 0.24)) 0%, rgba(0, 0, 0, 0) 70%),
+    radial-gradient(
+      120% 120% at 50% 18%,
+      color-mix(in srgb, var(--accent) 35%, rgba(255, 255, 255, 0.24)) 0%,
+      rgba(0, 0, 0, 0) 70%
+    ),
     linear-gradient(160deg, rgba(4, 6, 12, 0.9), rgba(3, 6, 14, 0.78));
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.12),
