@@ -88,7 +88,7 @@ textarea {
 
 /* === Disable text selection on mobile (except inputs) === */
 
-/* Гасим выделение и системные вызовы (лупа/копировать) почти везде */
+/* Гасим выделение и системные вызовы (лупа) почти везде */
 *:not(input):not(textarea):not([contenteditable='true']) {
   -webkit-user-select: none;
   -ms-user-select: none;
